@@ -65,11 +65,9 @@ const BottomTabNavigator = () => {
         },
       }}
     >
-      {/* <Tab.Screen name="Home" component={HomeScreen} /> */}
       <Tab.Screen name="Profile" component={ProfileNavigator} />
       <Tab.Screen name="FindFriends" component={FindFriendsScreen} />
       <Tab.Screen name="Messages" component={MessageScreen} />
-      {/* <Tab.Screen name="Notifications" component={NotificationScreen} /> */}
     </Tab.Navigator>
   );
 };

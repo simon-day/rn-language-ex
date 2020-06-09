@@ -6,6 +6,7 @@ import LoginScreen, {
 import RegisterScreen, {
   screenOptions as registerScreenOptions,
 } from '../screens/RegisterScreen';
+import AccountSetUpScreen from '../screens/AccountSetUpScreen';
 
 const AuthStackNavigator = createStackNavigator();
 
@@ -21,6 +22,11 @@ const AuthNavigator = () => {
         name="Register"
         component={RegisterScreen}
         options={registerScreenOptions}
+      />
+      <AuthStackNavigator.Screen
+        name="Setup"
+        component={AccountSetUpScreen}
+        // options={registerScreenOptions}
       />
     </AuthStackNavigator.Navigator>
   );

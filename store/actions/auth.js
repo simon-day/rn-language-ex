@@ -6,8 +6,30 @@ export const AUTHENTICATE = 'AUTHENTICATE';
 export const LOGOUT = 'LOGOUT';
 export const SET_DID_TRY_AL = 'SET_DID_TRY_AL';
 export const SET_DISPLAYNAME = 'SET_DISPLAYNAME';
+export const SET_NEW_USER = 'SET_NEW_USER';
+export const CHECK_ACCOUNT_EXISTS = 'CHECK_ACCOUNT_EXISTS';
+import * as firebase from 'firebase';
 
 let timer;
+
+export const checkAccountExists = (email, password) => {
+  return async (dispatch) => {
+    try {
+      const response = await firebase
+        .auth()
+        .createUserWithEmailAndPassword(email, password);
+      console.log(response);
+      dispatch({ type: CHECK_ACCOUNT_EXISTS });
+    } catch (error) {
+      console.log(error);
+      console.log('Something went horribly wrong');
+    }
+  };
+};
+
+export const setNewUser = (isNew) => {
+  return { type: SET_NEW_USER, isNew };
+};
 
 export const setDidTryAL = () => {
   return { type: SET_DID_TRY_AL };
@@ -57,7 +79,7 @@ export const signup = (name, email, password) => {
 
     const resData = await response.json();
     console.log(resData);
-
+    dispatch(setNewUser(true));
     dispatch(
       authenticate(
         resData.localId,
@@ -70,7 +92,7 @@ export const signup = (name, email, password) => {
     const expirationDate = new Date(
       new Date().getTime() + parseInt(resData.expiresIn) * 1000
     );
-    console.log(resData.displayName);
+
     saveDataToStorage(
       resData.displayName,
       resData.idToken,
@@ -111,7 +133,7 @@ export const login = (email, password) => {
 
     const resData = await response.json();
     console.log(resData);
-
+    dispatch(setNewUser(false));
     dispatch(
       authenticate(
         resData.localId,

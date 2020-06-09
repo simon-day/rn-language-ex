@@ -13,7 +13,9 @@ import * as authActions from '../store/actions/auth';
 const HomeScreen = (props) => {
   const userName = useSelector((state) => state.auth.username);
   const auth = useSelector((state) => state.auth);
-  console.log(useSelector((state) => state.auth.localId));
+
+
+
 
   const dispatch = useDispatch();
 

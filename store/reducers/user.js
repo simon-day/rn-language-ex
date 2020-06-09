@@ -4,6 +4,8 @@ import {
   SET_NEW_USER,
   SET_NATIVE_LANGUAGE,
   SET_TARGET_LANGUAGE,
+  FETCH_PROFILE_PHOTO,
+  SET_GENDER,
 } from '../actions/user';
 import { LOGOUT } from '../actions/auth';
 
@@ -13,7 +15,7 @@ const initialState = {
   targetLanguage: null,
   age: null,
   locaton: null,
-  newUser: false,
+  gender: null,
 };
 
 export default (state = initialState, action) => {
@@ -31,16 +33,25 @@ export default (state = initialState, action) => {
         newUser: true,
       };
     }
-    case FETCH_PROFILE_DATA:
-      const userData = action.userData;
-
-      const { nativeLanguage, targetLanguage } = userData;
-
+    case FETCH_PROFILE_PHOTO:
+      const photo = action.photoUrl;
       return {
         ...state,
-        profilePhoto: userData.profilePhoto,
+        profilePhoto: photo,
+      };
+    case FETCH_PROFILE_DATA:
+      const userData = action.userData;
+      const { nativeLanguage, targetLanguage, gender } = userData;
+      return {
+        ...state,
+        gender: gender || null,
         nativeLanguage: nativeLanguage ? nativeLanguage : null,
         targetLanguage: targetLanguage ? targetLanguage : null,
+      };
+    case SET_GENDER:
+      return {
+        ...state,
+        gender: action.gender,
       };
     case SET_NATIVE_LANGUAGE:
       return {

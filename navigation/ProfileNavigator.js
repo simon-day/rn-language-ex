@@ -4,13 +4,14 @@ import ProfileScreen from '../screens/ProfileScreen';
 import LanguageSelectionScreen, {
   screenOptions as languageselectionScreenOptions,
 } from '../screens/LanguageSelectionScreen';
+import ProfileScreen2 from '../screens/ProfileScreen2';
 
 const ProfileStackNavigator = createStackNavigator();
 
 const ProfileNavigator = () => {
   return (
     <ProfileStackNavigator.Navigator>
-      <ProfileStackNavigator.Screen name="Profile" component={ProfileScreen} />
+      <ProfileStackNavigator.Screen name="Profile" component={ProfileScreen2} />
       <ProfileStackNavigator.Screen
         name="LanguageSelect"
         component={LanguageSelectionScreen}

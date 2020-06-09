@@ -54,12 +54,19 @@ const RegisterScreen = (props) => {
     }
 
     try {
-      const response = await dispatch(
-        authActions.signup(name, email, password)
-      );
+      await dispatch(authActions.signup(name, email, password));
+      props.navigation.navigate('Setup');
     } catch (error) {
-      setErrorMessage(error.message);
+      setErrorMessage('An account with this email already exists');
     }
+
+    // props.navigation.navigate('Setup', { name, email, password });
+
+    // try {
+    //
+    // } catch (error) {
+    //   setErrorMessage(error.message);
+    // }
   };
 
   return (
@@ -107,21 +114,6 @@ const RegisterScreen = (props) => {
         <Text
           style={styles.greeting}
         >{`Sign up to start connecting with \nlanguage exchange partners near you.`}</Text>
-        {/* <TouchableOpacity
-          style={styles.avatarPlaceholder}
-          onPress={pickAvatarHandler}
-        >
-          {avatar && <Image style={styles.avatar} source={{ uri: avatar }} />}
-          {!avatar && (
-            <Ionicons
-              name="ios-add"
-              size={40}
-              color="#8f8f8f"
-              style={{ marginTop: 6, marginLeft: 1 }}
-            />
-          )}
-        </TouchableOpacity>
-        <Text style={styles.photoText}>Add profile photo</Text> */}
       </View>
 
       <View style={styles.errorMessage}>
