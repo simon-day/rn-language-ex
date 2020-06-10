@@ -1,38 +1,49 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Avatar, Overlay } from 'react-native-elements';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
-  StyleSheet,
-  Image,
   View,
+  SafeAreaView,
   Text,
+  StyleSheet,
   TouchableOpacity,
-  LayoutAnimation,
-  ActivityIndicator,
+  StatusBar,
   Alert,
-  AsyncStorage,
+  ActivityIndicator,
 } from 'react-native';
-import { Ionicons, FontAwesome } from '@expo/vector-icons';
-import * as authActions from '../store/actions/auth';
-import * as userActions from '../store/actions/user';
+import { CheckBox } from 'react-native-elements';
+import AvatarImage from '../components/AvatarImage';
+import { Ionicons } from '@expo/vector-icons';
 import * as Permissions from 'expo-permissions';
 import * as ImagePicker from 'expo-image-picker';
+import FetchLocation from '../components/FetchLocation';
+import * as userActions from '../store/actions/user';
+import * as authActions from '../store/actions/auth';
 
 const ProfileScreen = (props) => {
   const dispatch = useDispatch();
-
-  const [isLoading, setIsLoading] = useState(true);
-  const [avatar, setAvatar] = useState(null);
-  const [visible, setVisible] = useState(false);
-  const [id, setId] = useState();
+  console.log('Oops');
+  const [isLoading, setIsLoading] = useState(false);
 
   const authData = useSelector((state) => state.auth);
-  const { username } = authData;
+  const { userId } = authData;
 
   const userData = useSelector((state) => state.user);
-  const { nativeLanguage, targetLanguage, profilePhoto } = userData;
+  const { nativeLanguage, targetLanguage, profilePhoto, gender } = userData;
 
-  const prevImageRef = useRef();
+  const [maleChecked, setMaleChecked] = useState(false);
+  const [femaleChecked, setFemaleChecked] = useState(false);
+
+  const genderCheckHandler = (selectedGender) => {
+    if (selectedGender === 'Male') {
+      dispatch(userActions.setGender(userId, 'Male'));
+    } else if (selectedGender === 'Female') {
+      dispatch(userActions.setGender(userId, 'Female'));
+    }
+  };
+
+  const [photo, setPhoto] = useState(
+    require('../assets/placeholderprofilephoto.png')
+  );
 
   const verifyPermissions = async () => {
     const result = await Permissions.askAsync(Permissions.CAMERA_ROLL);
@@ -65,10 +76,8 @@ const ProfileScreen = (props) => {
 
       if (!image.cancelled) {
         setIsLoading(true);
-        await dispatch(userActions.addProfilePhoto(id, image.uri));
-        prevImageRef.current = image.uri;
-        await setAvatar(image.uri);
-        setIsLoading(false);
+        setPhoto({ uri: image.uri });
+        await dispatch(userActions.addProfilePhoto(userId, image.uri));
       }
     } catch (error) {
       console.log(error);
@@ -76,195 +85,136 @@ const ProfileScreen = (props) => {
     setIsLoading(false);
   };
 
-  useEffect(() => {
-    const getId = async () => {
-      const userData = await AsyncStorage.getItem('userData');
-      const transformedData = JSON.parse(userData);
-      const { userId } = transformedData;
-      setId(userId);
-
-      if (userId) {
-        setIsLoading(true);
-        console.log('RUNNINGHERE');
-        dispatch(userActions.fetchProfileData(userId));
-        setIsLoading(false);
-      }
-    };
-
-    getId();
-  }, [dispatch]);
-
-  // useEffect(() => {
-  //   setIsLoading(true);
-  //   dispatch(userActions.fetchProfileData(id));
-  //   setIsLoading(false);
-  // }, [userId]);
-
-  // const fetchPhoto = useCallback(async () => {
-  //   await dispatch(userActions.fetchProfileData(id));
-  //   await setAvatar(profilePhoto);
-  //   setIsLoading(false);
-  // }, [profilePhoto]);
-
   const signOutHandler = () => {
-    dispatch(authActions.logout());
+    dispatch(authActions.signOutTest());
   };
 
-  LayoutAnimation.easeInEaseOut();
-
-  // if (isLoading) {
-  //   return (
-  //     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-  //       <ActivityIndicator size="large" color="black" />
-  //     </View>
-  //   );
-  // }
-
   return (
-    <View style={styles.container}>
-      <View style={styles.profileTopRow}>
-        <View>
-          {profilePhoto && !isLoading && (
-            <Avatar
-              style={{ width: 150, height: 150 }}
-              onPress={selectFromCameraRollHandler}
-              rounded
-              placeholderStyle={{ backgroundColor: 'transparent' }}
-              showAccessory={!isLoading && profilePhoto && true}
-              onAccessoryPress={selectFromCameraRollHandler}
-              size="xlarge"
-              source={{
-                uri: profilePhoto,
-              }}
-            />
-          )}
-          {isLoading && (
-            <Avatar
-              style={{ width: 150, height: 150 }}
-              onPress={selectFromCameraRollHandler}
-              rounded
-              placeholderStyle={{ backgroundColor: '#ccc' }}
-              renderPlaceholderContent={
-                <ActivityIndicator size="large" color="black" />
-              }
-              size="xlarge"
-            />
-          )}
-          {!isLoading && !profilePhoto && (
-            <Avatar
-              style={{ width: 150, height: 150 }}
-              onPress={selectFromCameraRollHandler}
-              rounded
-              placeholderStyle={{ backgroundColor: 'transparent' }}
-              showAccessory={true}
-              onAccessoryPress={selectFromCameraRollHandler}
-              size="xlarge"
-              source={require('../assets/placeholderprofilephoto.png')}
-              // icon={{ name: 'ios-add', type: 'ionicon', color: 'white' }}
-              containerStyle={{ backgroundColor: '#ccc' }}
-            />
-          )}
-          {!profilePhoto && !isLoading && (
-            <Text style={styles.photoText}>Add profile photo</Text>
-          )}
-          <View style={styles.biographyHeader}>
-            <FontAwesome
-              style={{
-                paddingHorizontal: 4,
-                paddingVertical: 2,
-                borderWidth: StyleSheet.hairlineWidth,
-                borderColor: 'white',
-                backgroundColor: '#eb2661',
-                color: 'white',
-              }}
-              name="female"
-              size={22}
-            />
-            <Text style={styles.biographyText}>
-              {username} <Text style={styles.ageText}>28</Text>
-            </Text>
-          </View>
-        </View>
-        <View style={styles.languagesContainer}>
-          <View style={styles.languageSection}>
-            <TouchableOpacity
-              style={styles.languageBox}
-              onPress={() =>
-                props.navigation.navigate('LanguageSelect', {
-                  nativeLanguage: nativeLanguage,
-                  targetLanguage: targetLanguage,
-                  editingNativeLanguage: true,
-                  userId: id,
-                })
-              }
-            >
-              <View style={styles.languageTitleAndIcon}>
-                <Text style={styles.languageHeaderText}>Native Language </Text>
-                <Ionicons
-                  style={{ paddingLeft: 10 }}
-                  name="ios-build"
-                  size={15}
-                />
-              </View>
-              {nativeLanguage ? (
-                <Text style={{ fontWeight: '200' }}>{nativeLanguage}</Text>
-              ) : (
-                <ActivityIndicator size="small" />
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.languageBox}
-              onPress={() =>
-                props.navigation.navigate('LanguageSelect', {
-                  targetLanguage: targetLanguage,
-                  nativeLanguage: nativeLanguage,
-                  editingTargetLanguage: true,
-                  userId: id,
-                })
-              }
-            >
-              <View style={styles.languageTitleAndIcon}>
-                <Text style={styles.languageHeaderText}>Target Language </Text>
-                <Ionicons
-                  style={{ paddingLeft: 10 }}
-                  name="ios-build"
-                  size={15}
-                />
-              </View>
-              {targetLanguage ? (
-                <Text style={{ fontWeight: '200' }}>{targetLanguage}</Text>
-              ) : (
-                <ActivityIndicator size="small" />
-              )}
-            </TouchableOpacity>
-          </View>
-        </View>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" />
+
+      <View style={styles.avatarImage}>
+        {!isLoading ? (
+          <AvatarImage
+            showAccessory={true}
+            source={profilePhoto ? { uri: profilePhoto } : photo}
+            onPress={selectFromCameraRollHandler}
+          />
+        ) : (
+          <AvatarImage
+            showAccessory={true}
+            renderPlaceholderContent={<ActivityIndicator size="small" />}
+            onPress={selectFromCameraRollHandler}
+          />
+        )}
+        {/* <Text style={styles.photoText}>Add profile photo</Text> */}
       </View>
 
-      <View style={styles.selfIntroduction}>
-        <Text style={styles.bioSectionHeader}>ABOUT ME</Text>
-        <View style={styles.bioSectionContainer}>
-          <Text style={styles.selfIntroMain}>
-            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Placeat,
-            quod sunt. Quibusdam vel voluptate officia quas numquam ut minus
-            dolores.
+      <View style={styles.settingsBody}>
+        <View style={styles.settingsBodyRow}>
+          <View style={{ marginTop: 20 }}>
+            <View style={styles.selectGender}>
+              <CheckBox
+                center
+                title="Male"
+                onPress={() => {
+                  genderCheckHandler('Male');
+                  // setCheckedMale(true);
+                  // setCheckedFemale(false);
+                }}
+                checkedColor="#E9446A"
+                checked={gender === 'Male' || false}
+                // containerStyle={{
+                //   width: '50%',
+                //   alignItems: 'center',
+                //   textAlign: 'center',
+                //   justifyContent: 'center',
+                // }}
+              />
+              <CheckBox
+                center
+                title="Female"
+                onPress={() => {
+                  genderCheckHandler('Female');
+                }}
+                checkedColor="#E9446A"
+                checked={gender === 'Female' || false}
+              />
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.settingsBodyRow}>
+          <Text style={{ ...styles.bioSectionHeader, marginTop: 12 }}>
+            LIVING IN
           </Text>
+          <View style={styles.bioSectionContainer}>
+            {/* <Text style={styles.selfIntroMain}>
+              {setInitialCoordsHandler()}
+            </Text> */}
+            <FetchLocation />
+            <Ionicons style={{ marginRight: 10 }} name="ios-create" size={25} />
+          </View>
         </View>
-      </View>
 
-      <View style={styles.selfIntroduction}>
-        <Text style={{ ...styles.bioSectionHeader, marginTop: 12 }}>
-          LIVING IN
-        </Text>
-        <View style={styles.bioSectionContainer}>
-          <Text style={styles.selfIntroMain}>London, UK</Text>
+        <View style={styles.settingsBodyRow}>
+          <Text style={{ ...styles.bioSectionHeader, marginTop: 12 }}>
+            I SPEAK
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              props.navigation.navigate('LanguageSelect', {
+                editingNativeLanguage: true,
+                nativeLanguage,
+                userId,
+              });
+            }}
+          >
+            <View style={styles.bioSectionContainer}>
+              <Text style={styles.selfIntroMain}>
+                {nativeLanguage || 'Select your native language'}
+              </Text>
+
+              <Ionicons
+                style={{ marginRight: 10 }}
+                name="ios-create"
+                size={25}
+              />
+            </View>
+          </TouchableOpacity>
         </View>
-      </View>
 
-      <TouchableOpacity style={{ marginTop: 32 }} onPress={signOutHandler}>
-        <Text>Logout</Text>
-      </TouchableOpacity>
-    </View>
+        <View style={styles.settingsBodyRow}>
+          <Text style={{ ...styles.bioSectionHeader, marginTop: 12 }}>
+            I'M LEARNING
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              props.navigation.navigate('LanguageSelect', {
+                editingTargetLanguage: true,
+                targetLanguage: targetLanguage,
+                userId,
+              });
+            }}
+          >
+            <View style={styles.bioSectionContainer}>
+              <Text style={styles.selfIntroMain}>
+                {targetLanguage || 'Select language you are learning'}
+              </Text>
+
+              <Ionicons
+                style={{ marginRight: 10 }}
+                name="ios-create"
+                size={25}
+              />
+            </View>
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity style={{ marginTop: 32 }} onPress={signOutHandler}>
+          <Text>Logout</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 };
 
@@ -272,85 +222,45 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#f2f2f2',
   },
-  profileTopRow: {
-    alignItems: 'center',
-    alignContent: 'center',
+  selectGender: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    height: 225,
-  },
-  languagesContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-  },
-  biographyHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-  },
-  biographyText: {
-    fontSize: 26,
-    paddingVertical: 5,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  ageText: {
-    fontSize: 20,
-    fontWeight: '300',
-  },
-  avatarPlaceholder: {
-    width: 200,
-    height: 200,
-    backgroundColor: '#E1E2E6',
-    borderRadius: 100,
-    marginTop: 100,
+    marginHorizontal: 5,
+    // width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  avatar: {
-    position: 'absolute',
-    width: 200,
-    height: 200,
-    borderRadius: 100,
+  avatarImage: {
+    marginTop: 200,
   },
   photoText: {
-    marginTop: 5,
-    fontSize: 10,
+    marginTop: 10,
+    fontSize: 14,
     textAlign: 'center',
     fontWeight: '200',
   },
-  languageSection: {
-    justifyContent: 'space-between',
+  greeting: {
+    // marginTop: 32,
+    color: '#2e2e2e',
+    fontSize: 18,
+    fontWeight: '400',
+    textAlign: 'center',
+  },
+  settingsBody: {
+    width: '100%',
+    height: '100%',
+  },
+
+  button: {
+    paddingHorizontal: 50,
+    backgroundColor: '#E9446A',
+    borderRadius: 4,
+    height: 52,
     alignItems: 'center',
-  },
-  languageTitleAndIcon: {
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-  },
-  languageBox: {
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    marginHorizontal: 15,
-    marginVertical: 10,
-    padding: 10,
-    shadowOffset: {
-      width: 1,
-      height: 1,
-    },
-    borderRadius: 15,
-    shadowColor: 'black',
-    shadowOpacity: 0.2,
-    elevation: 4,
   },
-  languageHeaderText: {
-    textTransform: 'uppercase',
-    fontWeight: '600',
-    marginBottom: 7,
-  },
-  selfIntroduction: {
+  settingsBodyRow: {
     width: '100%',
   },
   bioSectionHeader: {
@@ -359,6 +269,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   bioSectionContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     backgroundColor: 'white',
     width: '100%',
     borderColor: '#dbdbdb',

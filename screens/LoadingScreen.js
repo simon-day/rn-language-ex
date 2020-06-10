@@ -8,38 +8,20 @@ import {
 import { useDispatch } from 'react-redux';
 import * as authActions from '../store/actions/auth';
 import * as userActions from '../store/actions/user';
+import * as firebase from 'firebase';
 
 const StartupScreen = (props) => {
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    const tryLogin = async () => {
-      const userData = await AsyncStorage.getItem('userData');
-
-      if (!userData) {
-        dispatch(authActions.setDidTryAL());
-        dispatch(userActions.setNewUser());
-        return;
-      }
-      const transformedData = JSON.parse(userData);
-      const { displayName, token, userId, expiryDate } = transformedData;
-
-      const expirationDate = new Date(expiryDate);
-
-      if (expirationDate <= new Date() || !token || !userId) {
-        dispatch(authActions.setDidTryAL());
-        return;
-      }
-
-      const expirationTime = expirationDate.getTime() - new Date().getTime();
-
-      dispatch(
-        authActions.authenticate(userId, token, expirationTime, displayName)
-      );
-    };
-
-    tryLogin();
-  }, [dispatch]);
+  firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+      console.log('Here we are');
+      dispatch(authActions.profileExists(true, user.uid));
+    } else {
+      dispatch(authActions.profileExists(false));
+      dispatch(authActions.setDidTryAL());
+    }
+  });
 
   return (
     <View style={styles.screen}>

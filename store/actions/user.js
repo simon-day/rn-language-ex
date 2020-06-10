@@ -15,13 +15,12 @@ export const setNewUser = () => {
 export const setGender = (userId, gender) => {
   return async (dispatch) => {
     try {
-      const response = await db.collection('userData').doc(userId).set(
+      await db.collection('userData').doc(userId).set(
         {
           gender: gender,
         },
         { merge: true }
       );
-      console.log(response);
       dispatch({ type: SET_GENDER, gender: gender });
     } catch (error) {
       console.log(error);
@@ -78,49 +77,40 @@ export const addProfilePhoto = (userId, photoUri) => {
   };
 };
 
-export const fetchProfilePhoto = (userId) => {
-  return async (dispatch) => {
-    const userData = {};
+// export const fetchProfilePhoto = (userId) => {
+//   return async (dispatch) => {
+//     const userData = {};
 
-    try {
-      const newUrl = await firebase
-        .storage()
-        .ref(`${userId}/images/avatar.jpg`)
-        .getDownloadURL();
-      console.log(newUrl);
-      // const imageUrl = await firebase
-      //   .storage()
-      //   .ref(`${userId}/images/avatar.jpg`)
-      //   .getDownloadURL();
-      dispatch({ type: FETCH_PROFILE_PHOTO, photoUrl: newUrl });
-    } catch (error) {
-      console.log('ERE');
-      dispatch({
-        type: FETCH_PROFILE_PHOTO,
-        photoUrl: null,
-      });
-    }
-
-    // console.log(ref);
-    // if (ref) {
-    //   userData.profilePhoto = await ref.getDownloadURL();
-    // } else {
-    //   userData.profilePhoto = null;
-    // }
-  };
-};
+//     try {
+//       const newUrl = await firebase
+//         .storage()
+//         .ref(`${userId}/images/avatar.jpg`)
+//         .getDownloadURL();
+//       console.log(newUrl);
+//       // const imageUrl = await firebase
+//       //   .storage()
+//       //   .ref(`${userId}/images/avatar.jpg`)
+//       //   .getDownloadURL();
+//       dispatch({ type: FETCH_PROFILE_PHOTO, photoUrl: newUrl });
+//     } catch (error) {
+//       console.log('ERE');
+//       dispatch({
+//         type: FETCH_PROFILE_PHOTO,
+//         photoUrl: null,
+//       });
+//     }
+//   };
+// };
 
 export const fetchProfileData = (userId) => {
   return async (dispatch) => {
-    dispatch(fetchProfilePhoto(userId));
-
     // firebase.auth().onAuthStateChanged((user) => {
     //   if (user) {
     //     console.log('ere');
     //     dispatch(fetchProfilePhoto(user.uid));
     //   }
     // });
-
+    console.log('We Here');
     const userData = {};
 
     let doc = await db.collection('userData').doc(userId).get();
@@ -136,8 +126,18 @@ export const fetchProfileData = (userId) => {
       }
     }
 
-    console.log('userData in fetchProfileData action: ', userData);
+    const newUrl = await firebase
+      .storage()
+      .ref(`${userId}/images/avatar.jpg`)
+      .getDownloadURL();
+    console.log(newUrl);
 
+    if (newUrl) {
+      userData.profilePhoto = newUrl;
+    }
+
+    console.log('userData in fetchProfileData action: ', userData);
+    // dispatch(fetchProfilePhoto(userId));
     dispatch({
       type: FETCH_PROFILE_DATA,
       userData: userData,

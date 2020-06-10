@@ -27,26 +27,29 @@ export default (state = initialState, action) => {
         ...state,
         profilePhoto: action.photo,
       };
-    case SET_NEW_USER: {
-      return {
-        ...state,
-        newUser: true,
-      };
-    }
+    // case SET_NEW_USER: {
+    //   return {
+    //     ...state,
+    //     newUser: true,
+    //   };
+    // }
     case FETCH_PROFILE_PHOTO:
+      console.log('CALLED');
       const photo = action.photoUrl;
       return {
         ...state,
         profilePhoto: photo,
       };
     case FETCH_PROFILE_DATA:
+      console.log('Or Here');
       const userData = action.userData;
-      const { nativeLanguage, targetLanguage, gender } = userData;
+      const { nativeLanguage, targetLanguage, gender, profilePhoto } = userData;
       return {
         ...state,
         gender: gender || null,
-        nativeLanguage: nativeLanguage ? nativeLanguage : null,
-        targetLanguage: targetLanguage ? targetLanguage : null,
+        nativeLanguage: nativeLanguage || null,
+        targetLanguage: targetLanguage || null,
+        profilePhoto: profilePhoto || null,
       };
     case SET_GENDER:
       return {

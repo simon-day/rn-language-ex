@@ -7,6 +7,8 @@ import {
   CHECK_ACCOUNT_EXISTS,
   LOGIN_SUCCESS,
   LOGIN_ERROR,
+  SIGNOUT_SUCCESS,
+  PROFILE_EXISTS,
 } from '../actions/auth';
 
 const initialState = {
@@ -14,42 +16,60 @@ const initialState = {
   userId: null,
   username: '',
   didTryAutoLogin: false,
-  newAccount: true,
   authError: null,
+  profileExists: false,
 };
 
 export default (state = initialState, action) => {
   switch (action.type) {
+    case PROFILE_EXISTS:
+      return {
+        ...state,
+        userId: action.userId,
+        profileExists: action.exists,
+        didTryAutoLogin: true,
+      };
     case LOGIN_SUCCESS:
       console.log('Logged in');
       return {
         ...state,
+        userId: action.userId,
+        profileExists: true,
+        didTryAutoLogin: true,
         authError: null,
       };
     case LOGIN_ERROR:
       console.log('Logged in failed');
-
       return {
         ...state,
         authError: 'Login Failed',
+        didTryAutoLogin: false,
+        profileExists: false,
       };
-    case AUTHENTICATE:
+    case SIGNOUT_SUCCESS:
       return {
-        ...state,
-        username: action.displayName,
-        token: action.token,
-        userId: action.userId,
+        ...initialState,
         didTryAutoLogin: true,
+        profileExists: false,
       };
-    case CHECK_ACCOUNT_EXISTS:
-      return {
-        ...state,
-      };
-    case SET_NEW_USER:
-      return {
-        ...state,
-        newAccount: action.isNew,
-      };
+
+    // case AUTHENTICATE:
+    //   return {
+    //     ...state,
+    //     username: action.displayName,
+    //     token: action.token,
+    //     userId: action.userId,
+    //     didTryAutoLogin: true,
+    //   };
+    // case CHECK_ACCOUNT_EXISTS:
+    //   return {
+    //     ...state,
+    //   };
+    // case SET_NEW_USER:
+    //   return {
+    //     ...state,
+    //     newAccount: action.isNew,
+    //   };
     case SET_DISPLAYNAME:
       return {
         ...state,
@@ -64,6 +84,7 @@ export default (state = initialState, action) => {
       return {
         ...initialState,
         didTryAutoLogin: true,
+        profileExists: false,
       };
     default:
       return state;

@@ -9,10 +9,23 @@ export const SET_DISPLAYNAME = 'SET_DISPLAYNAME';
 export const SET_NEW_USER = 'SET_NEW_USER';
 export const CHECK_ACCOUNT_EXISTS = 'CHECK_ACCOUNT_EXISTS';
 export const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
+export const SIGNOUT_SUCCESS = 'SIGNOUT_SUCCESS';
 export const LOGIN_ERROR = 'LOGIN_ERROR';
+export const PROFILE_EXISTS = 'PROFILE_EXISTS';
 import * as firebase from 'firebase';
+import { fetchProfileData } from './user';
 
 let timer;
+
+export const profileExists = (YorN, userId = null) => {
+  return async (dispatch) => {
+    if (userId !== null) {
+      dispatch(fetchProfileData(userId));
+    }
+
+    dispatch({ type: PROFILE_EXISTS, exists: YorN, userId: userId });
+  };
+};
 
 export const checkAccountExists = (email, password) => {
   return async (dispatch) => {
@@ -21,6 +34,7 @@ export const checkAccountExists = (email, password) => {
         .auth()
         .createUserWithEmailAndPassword(email, password);
       console.log(response);
+
       dispatch({ type: CHECK_ACCOUNT_EXISTS });
     } catch (error) {
       console.log(error);
@@ -35,11 +49,23 @@ export const signInTest = (email, password) => {
       .auth()
       .signInWithEmailAndPassword(email, password)
       .then((res) => {
-        console.log(res);
-        dispatch({ type: LOGIN_SUCCESS });
+        console.log('res.user.uid: ', res.user.uid);
+        // const { uid, displayName } = res.user;
+        dispatch({ type: LOGIN_SUCCESS, userId: res.user.uid });
       })
       .catch((err) => {
         dispatch({ type: LOGIN_ERROR, err });
+      });
+  };
+};
+
+export const signOutTest = () => {
+  return (dispatch) => {
+    firebase
+      .auth()
+      .signOut()
+      .then(() => {
+        dispatch({ type: SIGNOUT_SUCCESS });
       });
   };
 };
@@ -58,12 +84,12 @@ export const setDisplayName = (name) => {
   };
 };
 
-export const authenticate = (userId, token, expiryTime, name) => {
-  return (dispatch) => {
-    dispatch(setLogoutTimer(expiryTime));
-    dispatch({ type: AUTHENTICATE, userId, token, displayName: name });
-  };
-};
+// export const authenticate = (userId, token, expiryTime, name) => {
+//   return (dispatch) => {
+//     dispatch(setLogoutTimer(expiryTime));
+//     dispatch({ type: AUTHENTICATE, userId, token, displayName: name });
+//   };
+// };
 
 export const signup = (name, email, password) => {
   return async (dispatch) => {
@@ -96,26 +122,27 @@ export const signup = (name, email, password) => {
 
     const resData = await response.json();
     console.log(resData);
-    dispatch(setNewUser(true));
-    dispatch(
-      authenticate(
-        resData.localId,
-        resData.idToken,
-        parseInt(resData.expiresIn) * 1000,
-        resData.displayName
-      )
-    );
-    // dispatch(setDisplayName(resData.displayName));
-    const expirationDate = new Date(
-      new Date().getTime() + parseInt(resData.expiresIn) * 1000
-    );
+    console.log('whattt');
 
-    saveDataToStorage(
-      resData.displayName,
-      resData.idToken,
-      resData.localId,
-      expirationDate
-    );
+    // dispatch(
+    //   authenticate(
+    //     resData.localId,
+    //     resData.idToken,
+    //     parseInt(resData.expiresIn) * 1000,
+    //     resData.displayName
+    //   )
+    // );
+    // dispatch(setDisplayName(resData.displayName));
+    // const expirationDate = new Date(
+    //   new Date().getTime() + parseInt(resData.expiresIn) * 1000
+    // );
+
+    // saveDataToStorage(
+    //   resData.displayName,
+    //   resData.idToken,
+    //   resData.localId,
+    //   expirationDate
+    // );
   };
 };
 
