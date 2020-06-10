@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
 import {
   View,
   Button,
@@ -10,8 +11,11 @@ import {
 import * as Location from 'expo-location';
 import * as Permissions from 'expo-permissions';
 import env from '../env';
+import * as userActions from '../store/actions/user';
 
 const FetchLocation = (props) => {
+  const dispatch = useDispatch();
+  console.log('FetchLocationCalled');
   const [userLocation, setUserLocation] = useState();
   const [isFetching, setisFetching] = useState(false);
   const [formattedLocation, setFormattedLocation] = useState('');
@@ -47,24 +51,12 @@ const FetchLocation = (props) => {
         timeout: 5000,
       });
 
-      // call geocoder API
-      const geoResponse = await fetch(
-        `https://reverse.geocoder.ls.hereapi.com/6.2/reversegeocode.json?prox=${location.coords.latitude},${location.coords.longitude},250&mode=retrieveAddresses&maxresults=1&gen=9&apiKey=${env.geoCodeApi}&lang=en-US`
+      dispatch(
+        userActions.setLocation({
+          lat: location.coords.latitude,
+          lng: location.coords.longitude,
+        })
       );
-      const resData = await geoResponse.json();
-      //   console.log(resData);
-      const district =
-        resData.Response.View[0].Result[0].Location.Address.District;
-      const city = resData.Response.View[0].Result[0].Location.Address.City;
-      const county = resData.Response.View[0].Result[0].Location.Address.County;
-      console.log(county);
-      const country =
-        resData.Response.View[0].Result[0].Location.Address.AdditionalData[0]
-          .value;
-
-      setFormattedLocation(`${city}, ${country}`);
-      console.log(formattedLocation);
-
       setUserLocation({
         lat: location.coords.latitude,
         lng: location.coords.longitude,
@@ -75,15 +67,23 @@ const FetchLocation = (props) => {
         'Please make sure you have GPS enabled or try again later',
         [{ text: 'OK' }]
       );
-      //   setUserLocation({ lat: 37.78825, lng: -122.4324 });
-      //
     }
 
     setisFetching(false);
   };
 
   return (
-    <Text>{isFetching ? 'Fetching your location....' : formattedLocation}</Text>
+    <Text
+      style={{
+        color: '#242424',
+        fontWeight: '300',
+        padding: 14,
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      }}
+    >
+      {isFetching ? 'Fetching your location....' : formattedLocation}
+    </Text>
   );
 };
 

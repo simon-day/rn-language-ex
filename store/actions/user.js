@@ -7,9 +7,26 @@ export const SET_NEW_USER = 'SET_NEW_USER';
 export const SET_NATIVE_LANGUAGE = 'SET_NATIVE_LANGUAGE';
 export const SET_TARGET_LANGUAGE = 'SET_TARGET_LANGUAGE';
 export const SET_GENDER = 'SET_GENDER';
+export const SET_LOCATION = 'SET_LOCATION';
 
 export const setNewUser = () => {
   return { type: SET_NEW_USER };
+};
+
+export const setLocation = (userId, coords) => {
+  return async (dispatch) => {
+    try {
+      await db.collection('userData').doc(userId).set(
+        {
+          location: coords,
+        },
+        { merge: true }
+      );
+      dispatch({ type: SET_LOCATION, location: coords });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 };
 
 export const setGender = (userId, gender) => {
@@ -37,7 +54,6 @@ export const setNativeLanguage = (userId, language) => {
         },
         { merge: true }
       );
-      console.log(response);
       dispatch({ type: SET_NATIVE_LANGUAGE, nativeLanguage: language });
     } catch (error) {
       console.log(error);
@@ -54,7 +70,6 @@ export const setTargetLanguage = (userId, language) => {
         },
         { merge: true }
       );
-      console.log(response);
       dispatch({ type: SET_TARGET_LANGUAGE, targetLanguage: language });
     } catch (error) {
       console.log(error);
@@ -110,7 +125,6 @@ export const fetchProfileData = (userId) => {
     //     dispatch(fetchProfilePhoto(user.uid));
     //   }
     // });
-    console.log('We Here');
     const userData = {};
 
     let doc = await db.collection('userData').doc(userId).get();
@@ -124,19 +138,20 @@ export const fetchProfileData = (userId) => {
       if (doc.data().gender) {
         userData.gender = doc.data().gender;
       }
+      if (doc.data().location) {
+        userData.location = doc.data().location;
+      }
     }
 
     const newUrl = await firebase
       .storage()
       .ref(`${userId}/images/avatar.jpg`)
       .getDownloadURL();
-    console.log(newUrl);
 
     if (newUrl) {
       userData.profilePhoto = newUrl;
     }
 
-    console.log('userData in fetchProfileData action: ', userData);
     // dispatch(fetchProfilePhoto(userId));
     dispatch({
       type: FETCH_PROFILE_DATA,

@@ -33,7 +33,6 @@ export const checkAccountExists = (email, password) => {
       const response = await firebase
         .auth()
         .createUserWithEmailAndPassword(email, password);
-      console.log(response);
 
       dispatch({ type: CHECK_ACCOUNT_EXISTS });
     } catch (error) {
@@ -49,8 +48,6 @@ export const signInTest = (email, password) => {
       .auth()
       .signInWithEmailAndPassword(email, password)
       .then((res) => {
-        console.log('res.user.uid: ', res.user.uid);
-        // const { uid, displayName } = res.user;
         dispatch({ type: LOGIN_SUCCESS, userId: res.user.uid });
       })
       .catch((err) => {
@@ -112,7 +109,6 @@ export const signup = (name, email, password) => {
     if (!response.ok) {
       const errorResData = await response.json();
       const errorId = errorResData.error.message;
-      console.log(errorId);
       let message = 'Something went wrong!';
       if (errorId === 'EMAIL_EXISTS') {
         message = 'This email exists already';
@@ -121,8 +117,6 @@ export const signup = (name, email, password) => {
     }
 
     const resData = await response.json();
-    console.log(resData);
-    console.log('whattt');
 
     // dispatch(
     //   authenticate(
@@ -176,7 +170,6 @@ export const login = (email, password) => {
     }
 
     const resData = await response.json();
-    console.log(resData);
     dispatch(setNewUser(false));
     dispatch(
       authenticate(

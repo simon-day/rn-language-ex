@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { StyleSheet, ScrollView } from 'react-native';
+import { StyleSheet, ScrollView, Button } from 'react-native';
 import { SearchBar, ListItem } from 'react-native-elements';
 import { Ionicons } from '@expo/vector-icons';
 import * as userActions from '../store/actions/user';
@@ -103,7 +103,11 @@ const LanguageSelectionScreen = (props) => {
             bottomDivider
             rightIcon={
               currentlySelected === language ? (
-                <Ionicons name="ios-checkmark-circle-outline" size={20} />
+                <Ionicons
+                  name="ios-checkmark-circle-outline"
+                  size={20}
+                  color="#E9446A"
+                />
               ) : null
             }
           />
@@ -124,6 +128,14 @@ export const screenOptions = (navData) => {
 
   return {
     headerTitle: headerTitle,
+    headerLeft: null,
+    headerRight: () => (
+      <Button
+        onPress={() => navData.navigation.goBack()}
+        title="Done"
+        color="#E9446A"
+      />
+    ),
   };
 };
 

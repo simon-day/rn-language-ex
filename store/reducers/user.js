@@ -6,6 +6,7 @@ import {
   SET_TARGET_LANGUAGE,
   FETCH_PROFILE_PHOTO,
   SET_GENDER,
+  SET_LOCATION,
 } from '../actions/user';
 import { LOGOUT } from '../actions/auth';
 
@@ -27,12 +28,6 @@ export default (state = initialState, action) => {
         ...state,
         profilePhoto: action.photo,
       };
-    // case SET_NEW_USER: {
-    //   return {
-    //     ...state,
-    //     newUser: true,
-    //   };
-    // }
     case FETCH_PROFILE_PHOTO:
       console.log('CALLED');
       const photo = action.photoUrl;
@@ -43,13 +38,27 @@ export default (state = initialState, action) => {
     case FETCH_PROFILE_DATA:
       console.log('Or Here');
       const userData = action.userData;
-      const { nativeLanguage, targetLanguage, gender, profilePhoto } = userData;
+      const {
+        nativeLanguage,
+        targetLanguage,
+        gender,
+        profilePhoto,
+        location,
+      } = userData;
+      console.log('USERDAYA: ', userData);
       return {
         ...state,
         gender: gender || null,
         nativeLanguage: nativeLanguage || null,
         targetLanguage: targetLanguage || null,
         profilePhoto: profilePhoto || null,
+        location: location || null,
+      };
+    case SET_LOCATION:
+      console.log(action.location);
+      return {
+        ...state,
+        location: action.location,
       };
     case SET_GENDER:
       return {

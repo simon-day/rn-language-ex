@@ -15,23 +15,45 @@ import AvatarImage from '../components/AvatarImage';
 import { Ionicons } from '@expo/vector-icons';
 import * as Permissions from 'expo-permissions';
 import * as ImagePicker from 'expo-image-picker';
-import FetchLocation from '../components/FetchLocation';
+import * as Location from 'expo-location';
+
 import * as userActions from '../store/actions/user';
 import * as authActions from '../store/actions/auth';
+import env from '../env';
 
 const ProfileScreen = (props) => {
   const dispatch = useDispatch();
-  console.log('Oops');
   const [isLoading, setIsLoading] = useState(false);
 
   const authData = useSelector((state) => state.auth);
   const { userId } = authData;
 
   const userData = useSelector((state) => state.user);
-  const { nativeLanguage, targetLanguage, profilePhoto, gender } = userData;
+  const {
+    nativeLanguage,
+    targetLanguage,
+    profilePhoto,
+    gender,
+    location,
+  } = userData;
 
-  const [maleChecked, setMaleChecked] = useState(false);
-  const [femaleChecked, setFemaleChecked] = useState(false);
+  const [formattedLocation, setFormattedLocation] = useState('');
+  const [isFetching, setisFetching] = useState(false);
+
+  const fetchFormattedLocation = async () => {
+    console.log('formatting API Call');
+
+    const geoResponse = await fetch(
+      `https://reverse.geocoder.ls.hereapi.com/6.2/reversegeocode.json?prox=${location.lat},${location.lng},250&mode=retrieveAddresses&maxresults=1&gen=9&apiKey=${env.geoCodeApi}&lang=en-US`
+    );
+    const resData = await geoResponse.json();
+    const city = resData.Response.View[0].Result[0].Location.Address.City;
+    const country =
+      resData.Response.View[0].Result[0].Location.Address.AdditionalData[0]
+        .value;
+
+    setFormattedLocation(`${city}, ${country}`);
+  };
 
   const genderCheckHandler = (selectedGender) => {
     if (selectedGender === 'Male') {
@@ -46,12 +68,15 @@ const ProfileScreen = (props) => {
   );
 
   const verifyPermissions = async () => {
-    const result = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+    const result = await Permissions.askAsync(
+      Permissions.CAMERA_ROLL,
+      Permissions.LOCATION
+    );
 
     if (result.status !== 'granted') {
       Alert.alert(
         'Insufficient permissions',
-        'You need to grant camera permissions to use this app',
+        'You need to grant camera permissions and location access to use this app',
         [{ text: 'OK' }]
       );
       return false;
@@ -85,9 +110,71 @@ const ProfileScreen = (props) => {
     setIsLoading(false);
   };
 
+  useEffect(() => {
+    if (!location) {
+      console.log('NOLOC');
+      setCoordsHandler();
+    }
+  }, []);
+
+  // const verifyPermissions = async () => {
+  //   const result = await Permissions.askAsync(Permissions.LOCATION);
+  //   if (result.status !== 'granted') {
+  //     Alert.alert(
+  //       'Insufficient permissions',
+  //       'You need to grant location permissions to use this app',
+  //       [{ text: 'OK' }]
+  //     );
+  //     return false;
+  //   }
+  //   return true;
+  // };
+
+  const setCoordsHandler = async () => {
+    console.log('FETCHING GPS');
+    const hasPermission = await verifyPermissions();
+
+    if (!hasPermission) {
+      return;
+    }
+
+    try {
+      setisFetching(true);
+      const location = await Location.getCurrentPositionAsync({
+        timeout: 5000,
+      });
+      console.log(
+        'here now location: ',
+        location.coords.latitude,
+        location.coords.longitude
+      );
+
+      dispatch(
+        userActions.setLocation(userId, {
+          lat: location.coords.latitude,
+          lng: location.coords.longitude,
+        })
+      );
+    } catch (error) {
+      Alert.alert(
+        'Could not fetch location!',
+        'Please make sure you have GPS enabled or try again later',
+        [{ text: 'OK' }]
+      );
+    }
+    setisFetching(false);
+  };
+
   const signOutHandler = () => {
     dispatch(authActions.signOutTest());
   };
+
+  useEffect(() => {
+    if (!location) {
+      return;
+    }
+    fetchFormattedLocation();
+  }, [location]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -111,7 +198,7 @@ const ProfileScreen = (props) => {
       </View>
 
       <View style={styles.settingsBody}>
-        <View style={styles.settingsBodyRow}>
+        {/* <View style={styles.settingsBodyRow}>
           <View style={{ marginTop: 20 }}>
             <View style={styles.selectGender}>
               <CheckBox
@@ -141,20 +228,62 @@ const ProfileScreen = (props) => {
                 checked={gender === 'Female' || false}
               />
             </View>
-          </View>
+          </View> */}
+        {/* </View> */}
+
+        <View style={styles.settingsBodyRow}>
+          <Text style={{ ...styles.bioSectionHeader, marginTop: 12 }}>
+            CURRENT LOCATION
+          </Text>
+          <TouchableOpacity
+            style={styles.bioSectionContainer}
+            onPress={setCoordsHandler}
+          >
+            <Text style={styles.selfIntroMain}>
+              {formattedLocation || 'Here'}
+            </Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <Text>UPDATE</Text>
+              <Ionicons
+                style={{ marginHorizontal: 10 }}
+                name="ios-refresh"
+                size={25}
+              />
+            </View>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.settingsBodyRow}>
           <Text style={{ ...styles.bioSectionHeader, marginTop: 12 }}>
-            LIVING IN
+            GENDER
           </Text>
-          <View style={styles.bioSectionContainer}>
-            {/* <Text style={styles.selfIntroMain}>
-              {setInitialCoordsHandler()}
-            </Text> */}
-            <FetchLocation />
-            <Ionicons style={{ marginRight: 10 }} name="ios-create" size={25} />
-          </View>
+          <TouchableOpacity
+            onPress={() => {
+              props.navigation.navigate('GenderSelect', {
+                currentGender: gender || null,
+                userId,
+              });
+            }}
+          >
+            <View style={styles.bioSectionContainer}>
+              <Text style={styles.selfIntroMain}>
+                {gender || 'Select your gender'}
+              </Text>
+
+              <Ionicons
+                style={{ marginRight: 10 }}
+                name="ios-create"
+                size={25}
+                color="#E9446A"
+              />
+            </View>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.settingsBodyRow}>
@@ -179,6 +308,7 @@ const ProfileScreen = (props) => {
                 style={{ marginRight: 10 }}
                 name="ios-create"
                 size={25}
+                color="#E9446A"
               />
             </View>
           </TouchableOpacity>
@@ -206,6 +336,7 @@ const ProfileScreen = (props) => {
                 style={{ marginRight: 10 }}
                 name="ios-create"
                 size={25}
+                color="#E9446A"
               />
             </View>
           </TouchableOpacity>
@@ -248,6 +379,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   settingsBody: {
+    marginTop: 20,
     width: '100%',
     height: '100%',
   },

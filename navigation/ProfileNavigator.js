@@ -4,6 +4,9 @@ import ProfileScreen from '../screens/ProfileScreen';
 import LanguageSelectionScreen, {
   screenOptions as languageselectionScreenOptions,
 } from '../screens/LanguageSelectionScreen';
+import GenderSelectionScreen, {
+  screenOptions as genderSelectionScreenOptions,
+} from '../screens/GenderSelectionScreen';
 
 const ProfileStackNavigator = createStackNavigator();
 
@@ -15,6 +18,11 @@ const ProfileNavigator = () => {
         name="LanguageSelect"
         component={LanguageSelectionScreen}
         options={languageselectionScreenOptions}
+      />
+      <ProfileStackNavigator.Screen
+        name="GenderSelect"
+        component={GenderSelectionScreen}
+        options={genderSelectionScreenOptions}
       />
     </ProfileStackNavigator.Navigator>
   );
