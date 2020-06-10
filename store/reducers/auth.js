@@ -5,6 +5,8 @@ import {
   SET_DISPLAYNAME,
   SET_NEW_USER,
   CHECK_ACCOUNT_EXISTS,
+  LOGIN_SUCCESS,
+  LOGIN_ERROR,
 } from '../actions/auth';
 
 const initialState = {
@@ -13,10 +15,24 @@ const initialState = {
   username: '',
   didTryAutoLogin: false,
   newAccount: true,
+  authError: null,
 };
 
 export default (state = initialState, action) => {
   switch (action.type) {
+    case LOGIN_SUCCESS:
+      console.log('Logged in');
+      return {
+        ...state,
+        authError: null,
+      };
+    case LOGIN_ERROR:
+      console.log('Logged in failed');
+
+      return {
+        ...state,
+        authError: 'Login Failed',
+      };
     case AUTHENTICATE:
       return {
         ...state,

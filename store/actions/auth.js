@@ -8,6 +8,8 @@ export const SET_DID_TRY_AL = 'SET_DID_TRY_AL';
 export const SET_DISPLAYNAME = 'SET_DISPLAYNAME';
 export const SET_NEW_USER = 'SET_NEW_USER';
 export const CHECK_ACCOUNT_EXISTS = 'CHECK_ACCOUNT_EXISTS';
+export const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
+export const LOGIN_ERROR = 'LOGIN_ERROR';
 import * as firebase from 'firebase';
 
 let timer;
@@ -24,6 +26,21 @@ export const checkAccountExists = (email, password) => {
       console.log(error);
       console.log('Something went horribly wrong');
     }
+  };
+};
+
+export const signInTest = (email, password) => {
+  return (dispatch) => {
+    firebase
+      .auth()
+      .signInWithEmailAndPassword(email, password)
+      .then((res) => {
+        console.log(res);
+        dispatch({ type: LOGIN_SUCCESS });
+      })
+      .catch((err) => {
+        dispatch({ type: LOGIN_ERROR, err });
+      });
   };
 };
 

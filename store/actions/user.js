@@ -83,11 +83,16 @@ export const fetchProfilePhoto = (userId) => {
     const userData = {};
 
     try {
-      const imageUrl = await firebase
+      const newUrl = await firebase
         .storage()
         .ref(`${userId}/images/avatar.jpg`)
         .getDownloadURL();
-      dispatch({ type: FETCH_PROFILE_PHOTO, photoUrl: imageUrl });
+      console.log(newUrl);
+      // const imageUrl = await firebase
+      //   .storage()
+      //   .ref(`${userId}/images/avatar.jpg`)
+      //   .getDownloadURL();
+      dispatch({ type: FETCH_PROFILE_PHOTO, photoUrl: newUrl });
     } catch (error) {
       console.log('ERE');
       dispatch({
@@ -108,6 +113,14 @@ export const fetchProfilePhoto = (userId) => {
 export const fetchProfileData = (userId) => {
   return async (dispatch) => {
     dispatch(fetchProfilePhoto(userId));
+
+    // firebase.auth().onAuthStateChanged((user) => {
+    //   if (user) {
+    //     console.log('ere');
+    //     dispatch(fetchProfilePhoto(user.uid));
+    //   }
+    // });
+
     const userData = {};
 
     let doc = await db.collection('userData').doc(userId).get();

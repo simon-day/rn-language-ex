@@ -18,9 +18,13 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Permissions from 'expo-permissions';
 import * as ImagePicker from 'expo-image-picker';
 import NativeLangSelection from '../components/NativeLangSelection';
+import FetchLocation from '../components/FetchLocation';
 import TargetLangSelection from '../components/TargetLangSelection';
 import * as userActions from '../store/actions/user';
 import * as authActions from '../store/actions/auth';
+import * as Location from 'expo-location';
+import * as firebase from 'firebase';
+// import * as Permissions from 'expo-permissions';
 
 const ProfileScreen2 = (props) => {
   const dispatch = useDispatch();
@@ -33,6 +37,8 @@ const ProfileScreen2 = (props) => {
   const userData = useSelector((state) => state.user);
   const { nativeLanguage, targetLanguage, profilePhoto, gender } = userData;
 
+  const [updatePhoto, setUpdatePhoto] = useState(false);
+
   console.log('gender: ', gender);
 
   useEffect(() => {
@@ -41,17 +47,10 @@ const ProfileScreen2 = (props) => {
     setIsLoading(false);
   }, []);
 
-  const [checkedMale, setCheckedMale] = useState();
-  const [checkedFemale, setCheckedFemale] = useState();
-
   const genderCheckHandler = (selectedGender) => {
     if (selectedGender === 'Male') {
-      // setCheckedMale(true);
-      // setCheckedFemale(false);
       dispatch(userActions.setGender(userId, 'Male'));
     } else if (selectedGender === 'Female') {
-      // setCheckedMale(false);
-      // setCheckedFemale(true);
       dispatch(userActions.setGender(userId, 'Female'));
     }
   };
@@ -90,6 +89,7 @@ const ProfileScreen2 = (props) => {
       });
 
       if (!image.cancelled) {
+        setUpdatePhoto(true);
         setIsLoading(true);
         setPhoto({ uri: image.uri });
         await dispatch(userActions.addProfilePhoto(userId, image.uri));
@@ -157,7 +157,10 @@ const ProfileScreen2 = (props) => {
             LIVING IN
           </Text>
           <View style={styles.bioSectionContainer}>
-            <Text style={styles.selfIntroMain}>Set your location...</Text>
+            {/* <Text style={styles.selfIntroMain}>
+              {setInitialCoordsHandler()}
+            </Text> */}
+            <FetchLocation />
             <Ionicons style={{ marginRight: 10 }} name="ios-create" size={25} />
           </View>
         </View>

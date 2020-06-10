@@ -24,7 +24,8 @@ const LoginScreen = (props) => {
   const authHandler = async () => {
     setErrorMessage(null);
     try {
-      await dispatch(authActions.login(email, password));
+      // await dispatch(authActions.login(email, password));
+      dispatch(authActions.signInTest(email, password));
     } catch (error) {
       setErrorMessage(error.message);
     }
