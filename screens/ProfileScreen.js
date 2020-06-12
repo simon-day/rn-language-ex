@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import moment from 'moment';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   View,
@@ -10,7 +11,6 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { CheckBox } from 'react-native-elements';
 import AvatarImage from '../components/AvatarImage';
 import { Ionicons } from '@expo/vector-icons';
 import * as Permissions from 'expo-permissions';
@@ -23,10 +23,11 @@ import env from '../env';
 
 const ProfileScreen = (props) => {
   const dispatch = useDispatch();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [displayAge, setDisplayAge] = useState('');
 
   const authData = useSelector((state) => state.auth);
-  const { userId } = authData;
+  const { userId, username, dateOfBirth: newUserDateOfBirth } = authData;
 
   const userData = useSelector((state) => state.user);
   const {
@@ -35,10 +36,27 @@ const ProfileScreen = (props) => {
     profilePhoto,
     gender,
     location,
+    dateOfBirth,
+    formattedLocation,
   } = userData;
+  console.log('DATEOFBIRTH FROM USERDATA: ', dateOfBirth);
 
-  const [formattedLocation, setFormattedLocation] = useState('');
+  var age = dateOfBirth
+    ? moment().diff(dateOfBirth, 'years')
+    : moment().diff(newUserDateOfBirth, 'years');
+
+  // const [formattedLocation, setFormattedLocation] = useState('');
   const [isFetching, setisFetching] = useState(false);
+
+  useEffect(() => {
+    console.log('in profile useEffect');
+    if (profilePhoto) {
+      setIsLoading(false);
+    }
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 2500);
+  }, [profilePhoto]);
 
   const fetchFormattedLocation = async () => {
     console.log('formatting API Call');
@@ -52,15 +70,7 @@ const ProfileScreen = (props) => {
       resData.Response.View[0].Result[0].Location.Address.AdditionalData[0]
         .value;
 
-    setFormattedLocation(`${city}, ${country}`);
-  };
-
-  const genderCheckHandler = (selectedGender) => {
-    if (selectedGender === 'Male') {
-      dispatch(userActions.setGender(userId, 'Male'));
-    } else if (selectedGender === 'Female') {
-      dispatch(userActions.setGender(userId, 'Female'));
-    }
+    dispatch(userActions.setFormattedLocation(`${city}, ${country}`));
   };
 
   const [photo, setPhoto] = useState(
@@ -102,33 +112,13 @@ const ProfileScreen = (props) => {
       if (!image.cancelled) {
         setIsLoading(true);
         setPhoto({ uri: image.uri });
-        await dispatch(userActions.addProfilePhoto(userId, image.uri));
+        dispatch(userActions.addProfilePhoto(userId, image.uri));
       }
     } catch (error) {
       console.log(error);
     }
     setIsLoading(false);
   };
-
-  useEffect(() => {
-    if (!location) {
-      console.log('NOLOC');
-      setCoordsHandler();
-    }
-  }, []);
-
-  // const verifyPermissions = async () => {
-  //   const result = await Permissions.askAsync(Permissions.LOCATION);
-  //   if (result.status !== 'granted') {
-  //     Alert.alert(
-  //       'Insufficient permissions',
-  //       'You need to grant location permissions to use this app',
-  //       [{ text: 'OK' }]
-  //     );
-  //     return false;
-  //   }
-  //   return true;
-  // };
 
   const setCoordsHandler = async () => {
     console.log('FETCHING GPS');
@@ -166,15 +156,35 @@ const ProfileScreen = (props) => {
   };
 
   const signOutHandler = () => {
-    dispatch(authActions.signOutTest());
+    dispatch(authActions.signOut());
   };
 
   useEffect(() => {
-    if (!location) {
+    console.log('in location useEffect');
+    if (!formattedLocation) {
+      console.log('NOLOC');
+      setCoordsHandler();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!location || formattedLocation) {
       return;
     }
+    ('running this');
     fetchFormattedLocation();
   }, [location]);
+
+  if (isLoading) {
+    return (
+      <View style={{ position: 'absolute', width: '100%', height: '100%' }}>
+        <ActivityIndicator
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+          size="large"
+        />
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -194,7 +204,9 @@ const ProfileScreen = (props) => {
             onPress={selectFromCameraRollHandler}
           />
         )}
-        {/* <Text style={styles.photoText}>Add profile photo</Text> */}
+        <Text style={styles.photoText}>
+          {username || ''}, {age || ''}
+        </Text>
       </View>
 
       <View style={styles.settingsBody}>
@@ -358,18 +370,18 @@ const styles = StyleSheet.create({
   selectGender: {
     flexDirection: 'row',
     marginHorizontal: 5,
-    // width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarImage: {
-    marginTop: 200,
+    marginTop: 230,
+    alignItems: 'center',
   },
   photoText: {
     marginTop: 10,
-    fontSize: 14,
+    fontSize: 26,
     textAlign: 'center',
-    fontWeight: '200',
+    fontWeight: '600',
   },
   greeting: {
     // marginTop: 32,
@@ -379,7 +391,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   settingsBody: {
-    marginTop: 20,
+    marginTop: 0,
     width: '100%',
     height: '100%',
   },

@@ -1,5 +1,6 @@
 import { AsyncStorage } from 'react-native';
 import env from '../../env';
+
 // export const SIGNUP = 'SIGNUP';
 // export const SIGNIN = 'SIGNIN';
 export const AUTHENTICATE = 'AUTHENTICATE';
@@ -10,39 +11,30 @@ export const SET_NEW_USER = 'SET_NEW_USER';
 export const CHECK_ACCOUNT_EXISTS = 'CHECK_ACCOUNT_EXISTS';
 export const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
 export const SIGNOUT_SUCCESS = 'SIGNOUT_SUCCESS';
+export const SIGN_UP_SUCCESS = 'SIGN_UP_SUCCESS';
 export const LOGIN_ERROR = 'LOGIN_ERROR';
 export const PROFILE_EXISTS = 'PROFILE_EXISTS';
+export const SET_DATE_OF_BIRTH = 'SET_DATE_OF_BIRTH ';
 import * as firebase from 'firebase';
+import { db } from '../../Fire';
 import { fetchProfileData } from './user';
 
-let timer;
-
-export const profileExists = (YorN, userId = null) => {
+export const profileExists = (YorN, userId = null, displayName = null) => {
   return async (dispatch) => {
     if (userId !== null) {
       dispatch(fetchProfileData(userId));
     }
 
-    dispatch({ type: PROFILE_EXISTS, exists: YorN, userId: userId });
+    dispatch({
+      type: PROFILE_EXISTS,
+      exists: YorN,
+      userId: userId,
+      displayName,
+    });
   };
 };
 
-export const checkAccountExists = (email, password) => {
-  return async (dispatch) => {
-    try {
-      const response = await firebase
-        .auth()
-        .createUserWithEmailAndPassword(email, password);
-
-      dispatch({ type: CHECK_ACCOUNT_EXISTS });
-    } catch (error) {
-      console.log(error);
-      console.log('Something went horribly wrong');
-    }
-  };
-};
-
-export const signInTest = (email, password) => {
+export const signIn = (email, password) => {
   return (dispatch) => {
     firebase
       .auth()
@@ -56,7 +48,7 @@ export const signInTest = (email, password) => {
   };
 };
 
-export const signOutTest = () => {
+export const signOut = () => {
   return (dispatch) => {
     firebase
       .auth()
@@ -81,145 +73,44 @@ export const setDisplayName = (name) => {
   };
 };
 
-// export const authenticate = (userId, token, expiryTime, name) => {
-//   return (dispatch) => {
-//     dispatch(setLogoutTimer(expiryTime));
-//     dispatch({ type: AUTHENTICATE, userId, token, displayName: name });
+// export const setDateOfBirth = (dateOfBirth, userId) => {
+//   return async (dispatch) => {
+//     try {
+//     } catch (error) {
+//       console.log(error);
+//     }
 //   };
 // };
 
-export const signup = (name, email, password) => {
+export const signUp = (name, email, password, dateOfBirth) => {
   return async (dispatch) => {
-    const response = await fetch(
-      `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${env.googleApiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+    try {
+      const response = await firebase
+        .auth()
+        .createUserWithEmailAndPassword(email, password);
+      // console.log('UMMM: ', response);
+      await firebase.auth().currentUser.updateProfile({
+        displayName: name,
+      });
+
+      dispatch(setDisplayName(name));
+      await db.collection('userData').doc(response.user.uid).set(
+        {
+          dateOfBirth: dateOfBirth,
         },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-          displayName: name,
-          returnSecureToken: true,
-        }),
-      }
-    );
+        { merge: true }
+      );
+      console.log('hmm');
+      dispatch({
+        type: SET_DATE_OF_BIRTH,
+        dateOfBirth,
+      });
 
-    if (!response.ok) {
-      const errorResData = await response.json();
-      const errorId = errorResData.error.message;
-      let message = 'Something went wrong!';
-      if (errorId === 'EMAIL_EXISTS') {
-        message = 'This email exists already';
-      }
-      throw new Error(message);
+      dispatch({ type: SIGN_UP_SUCCESS, userId: response.user.uid });
+      // dispatch DOB setup
+      // dispatch(setDateOfBirth(dateOfBirth, response.user.uid));
+    } catch (error) {
+      console.log(error);
     }
-
-    const resData = await response.json();
-
-    // dispatch(
-    //   authenticate(
-    //     resData.localId,
-    //     resData.idToken,
-    //     parseInt(resData.expiresIn) * 1000,
-    //     resData.displayName
-    //   )
-    // );
-    // dispatch(setDisplayName(resData.displayName));
-    // const expirationDate = new Date(
-    //   new Date().getTime() + parseInt(resData.expiresIn) * 1000
-    // );
-
-    // saveDataToStorage(
-    //   resData.displayName,
-    //   resData.idToken,
-    //   resData.localId,
-    //   expirationDate
-    // );
   };
-};
-
-export const login = (email, password) => {
-  return async (dispatch) => {
-    const response = await fetch(
-      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${env.googleApiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-          returnSecureToken: true,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorResData = await response.json();
-      const errorId = errorResData.error.message;
-      let message = 'Something went wrong!';
-      if (errorId === 'EMAIL_NOT_FOUND') {
-        message = 'This email could not be found!';
-      } else if (errorId === 'INVALID_PASSWORD') {
-        message = 'email or password is incorrect';
-      }
-      throw new Error(message);
-    }
-
-    const resData = await response.json();
-    dispatch(setNewUser(false));
-    dispatch(
-      authenticate(
-        resData.localId,
-        resData.idToken,
-        parseInt(resData.expiresIn) * 1000,
-        resData.displayName
-      )
-    );
-    // dispatch(setDisplayName(resData.displayName));
-    const expirationDate = new Date(
-      new Date().getTime() + parseInt(resData.expiresIn) * 1000
-    );
-    saveDataToStorage(
-      resData.displayName,
-      resData.idToken,
-      resData.localId,
-      expirationDate
-    );
-  };
-};
-
-export const logout = () => {
-  clearLogoutTimer();
-  AsyncStorage.removeItem('userData');
-  return { type: LOGOUT };
-};
-
-const clearLogoutTimer = () => {
-  if (timer) {
-    clearTimeout(timer);
-  }
-};
-
-const setLogoutTimer = (expirationTime) => {
-  return (dispatch) => {
-    timer = setTimeout(() => {
-      dispatch(logout());
-    }, expirationTime);
-  };
-};
-
-const saveDataToStorage = (displayName, token, userId, expirationDate) => {
-  AsyncStorage.setItem(
-    'userData',
-    JSON.stringify({
-      displayName: displayName,
-      token: token,
-      userId: userId,
-      expiryDate: expirationDate.toISOString(),
-    })
-  );
 };

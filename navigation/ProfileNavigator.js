@@ -12,9 +12,10 @@ const ProfileStackNavigator = createStackNavigator();
 
 const ProfileNavigator = () => {
   return (
-    <ProfileStackNavigator.Navigator>
+    <ProfileStackNavigator.Navigator mode="modal">
       <ProfileStackNavigator.Screen name="Profile" component={ProfileScreen} />
       <ProfileStackNavigator.Screen
+        mode="modal"
         name="LanguageSelect"
         component={LanguageSelectionScreen}
         options={languageselectionScreenOptions}

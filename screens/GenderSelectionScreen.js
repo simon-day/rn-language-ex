@@ -14,6 +14,8 @@ const LanguageSelectionScreen = (props) => {
 
   const { currentGender, userId } = props.route.params;
 
+  console.log('currentlySelecred: ', currentlySelected);
+
   useEffect(() => {
     setCurrentlySelected(currentGender);
   }, []);
@@ -21,8 +23,8 @@ const LanguageSelectionScreen = (props) => {
   const handleGenderChangeHandler = async (gender) => {
     setCurrentlySelected(gender);
     setIsLoading(true);
-
-    await dispatch(userActions.setGender(userId, gender));
+    dispatch(userActions.setGender(userId, gender));
+    setIsLoading(false);
   };
 
   return (

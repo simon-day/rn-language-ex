@@ -11,6 +11,9 @@ import { composeWithDevTools } from 'redux-devtools-extension';
 import * as firebase from 'firebase';
 import FirebaseKeys from './config';
 
+var provider = new firebase.auth.GoogleAuthProvider();
+console.log('PROVIDER: ', provider);
+
 import { decode, encode } from 'base-64';
 if (!global.btoa) {
   global.btoa = encode;

@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
+import moment from 'moment';
 import { useDispatch } from 'react-redux';
 import {
   View,
+  ScrollView,
   SafeAreaView,
   Text,
   StyleSheet,
@@ -13,10 +15,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as authActions from '../store/actions/auth';
-import UserPermissions from '../utilities/UserPermissions';
-import * as ImagePicker from 'expo-image-picker';
-import * as firebase from 'firebase';
-import Fire from '../Fire';
+import { TextInputMask } from 'react-native-masked-text';
 
 const RegisterScreen = (props) => {
   const dispatch = useDispatch();
@@ -24,8 +23,65 @@ const RegisterScreen = (props) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
+
+  const dateValidator = (text) => {
+    let inputArr = text.split('');
+
+    // if (inputArr.length === 0) {
+    //   setDateOfBirth('');
+    // }
+
+    if (inputArr.length > 0 && !inputArr[0].match(/[0-3]/)) {
+      return;
+    }
+
+    if (
+      inputArr.length > 1 &&
+      inputArr[0].match(/3/) &&
+      inputArr[1].match(/[2-9]/)
+    ) {
+      return;
+    }
+
+    if (inputArr.length > 3 && !inputArr[3].match(/[0-1]/)) {
+      return;
+    }
+
+    if (inputArr.length > 4 && !inputArr[4].match(/[0-9]/)) {
+      return;
+    }
+
+    if (inputArr.length > 6 && !inputArr[6].match(/[1-2]/)) {
+      return;
+    }
+
+    if (inputArr.length > 7 && !inputArr[7].match(/[0]|[9]/)) {
+      return;
+    }
+
+    if (text.length === 10) {
+      // console.log(text);
+      let dateFormat = 'DD/MM/YYYY';
+
+      let correctFormatDate = moment(text.toString(), dateFormat);
+
+      console.log(new Date(correctFormatDate).getTime());
+
+      if (!moment(correctFormatDate).isValid()) {
+        console.log('HERE');
+        setErrorMessage('Invalid date');
+        setDateOfBirth('');
+
+        return;
+      }
+    }
+
+    setDateOfBirth(text);
+    // setErrorMessage(null);
+  };
 
   const authHandler = async () => {
     setErrorMessage(null);
@@ -53,9 +109,28 @@ const RegisterScreen = (props) => {
       return;
     }
 
+    if (dateOfBirth.length !== 10) {
+      setErrorMessage('Enter your birthday');
+      return;
+    }
+
+    if (dateOfBirth.length === 10) {
+      let dateFormat = 'DD/MM/YYYY';
+      let correctFormatDate = moment(dateOfBirth.toString(), dateFormat);
+
+      let years = moment().diff(correctFormatDate, 'years', false);
+      if (years < 16) {
+        setErrorMessage('You must be 16 years and above to use this app');
+        return;
+      }
+    }
+
     try {
-      await dispatch(authActions.signup(name, email, password));
-      props.navigation.navigate('Setup');
+      let dateFormat = 'DD/MM/YYYY';
+      let formattedDate = moment(dateOfBirth.toString(), dateFormat);
+      const DOB = new Date(formattedDate).getTime();
+      console.log(DOB);
+      dispatch(authActions.signUp(name, email, password, DOB));
     } catch (error) {
       setErrorMessage('An account with this email already exists');
     }
@@ -68,6 +143,11 @@ const RegisterScreen = (props) => {
     //   setErrorMessage(error.message);
     // }
   };
+  // if (dateOfBirth.length === 10) {
+  //   console.log('JERE');
+  //   console.log(dateOfBirth);
+  //   console.log(moment(moment(dateOfBirth)).isValid());
+  // }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -87,7 +167,7 @@ const RegisterScreen = (props) => {
         source={require('../assets/authHeader.jpg')}
         style={{
           position: 'absolute',
-          bottom: -70,
+          bottom: -50,
           left: 0,
           width: '100%',
           height: '35%',
@@ -106,7 +186,7 @@ const RegisterScreen = (props) => {
       <View
         style={{
           position: 'absolute',
-          top: 180,
+          top: 120,
           alignItems: 'center',
           width: '100%',
         }}
@@ -120,7 +200,7 @@ const RegisterScreen = (props) => {
         {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
       </View>
 
-      <View style={styles.form}>
+      <ScrollView contentContainerStyle={styles.form}>
         <View>
           <Text style={styles.inputTitle}>Name</Text>
           <TextInput
@@ -128,6 +208,7 @@ const RegisterScreen = (props) => {
             style={styles.input}
             onChangeText={(text) => setName(text)}
             value={name}
+            clearButtonMode="while-editing"
           />
         </View>
         <View style={{ marginTop: 32 }}>
@@ -137,6 +218,23 @@ const RegisterScreen = (props) => {
             autoCapitalize="none"
             onChangeText={(text) => setEmail(text)}
             value={email}
+            clearButtonMode="while-editing"
+          />
+        </View>
+        <View style={{ marginTop: 32 }}>
+          <Text style={styles.inputTitle}>Birthday</Text>
+          <TextInputMask
+            style={styles.input}
+            placeholder="DD/MM/YYYY"
+            type={'datetime'}
+            options={{
+              format: 'DD/MM/YYYY',
+            }}
+            value={dateOfBirth}
+            onChangeText={(text) => {
+              dateValidator(text);
+            }}
+            returnKeyType="done"
           />
         </View>
         <View style={{ marginTop: 32 }}>
@@ -149,6 +247,7 @@ const RegisterScreen = (props) => {
             value={password}
           />
         </View>
+
         <View style={{ marginTop: 32 }}>
           <Text style={styles.inputTitle}>Confirm Password</Text>
           <TextInput
@@ -159,7 +258,7 @@ const RegisterScreen = (props) => {
             value={confirmPassword}
           />
         </View>
-      </View>
+      </ScrollView>
 
       <TouchableOpacity style={styles.button} onPress={authHandler}>
         <Text style={{ color: '#FFF', fontWeight: '500' }}>Sign up</Text>
@@ -184,17 +283,11 @@ export const screenOptions = {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // flex: 1,
+    height: '100%',
     backgroundColor: 'white',
   },
-  photoText: {
-    marginTop: 5,
-    fontSize: 10,
-    textAlign: 'center',
-    fontWeight: '200',
-  },
   greeting: {
-    // marginTop: 32,
     color: '#2e2e2e',
     fontSize: 18,
     fontWeight: '400',
@@ -211,26 +304,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarPlaceholder: {
-    width: 100,
-    height: 100,
-    backgroundColor: '#E1E2E6',
-    borderRadius: 50,
-    marginTop: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatar: {
-    position: 'absolute',
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-  },
   errorMessage: {
-    height: 72,
+    height: 25,
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: 36,
+    marginTop: -60,
   },
   error: {
     color: '#E9446A',
@@ -240,7 +319,7 @@ const styles = StyleSheet.create({
     // paddingTop: 70,
   },
   form: {
-    marginBottom: 48,
+    justifyContent: 'center',
     marginHorizontal: 30,
   },
   inputTitle: {
@@ -256,6 +335,7 @@ const styles = StyleSheet.create({
     color: '#161F3D',
   },
   button: {
+    marginBottom: 80,
     marginHorizontal: 30,
     backgroundColor: '#E9446A',
     borderRadius: 4,

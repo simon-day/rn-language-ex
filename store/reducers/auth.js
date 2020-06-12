@@ -1,20 +1,20 @@
 import {
-  AUTHENTICATE,
   LOGOUT,
   SET_DID_TRY_AL,
   SET_DISPLAYNAME,
-  SET_NEW_USER,
-  CHECK_ACCOUNT_EXISTS,
   LOGIN_SUCCESS,
   LOGIN_ERROR,
   SIGNOUT_SUCCESS,
   PROFILE_EXISTS,
+  SIGN_UP_SUCCESS,
+  SET_DATE_OF_BIRTH,
 } from '../actions/auth';
 
 const initialState = {
   token: null,
   userId: null,
   username: '',
+  dateOfBirth: null,
   didTryAutoLogin: false,
   authError: null,
   profileExists: false,
@@ -26,11 +26,25 @@ export default (state = initialState, action) => {
       return {
         ...state,
         userId: action.userId,
+        username: action.displayName,
         profileExists: action.exists,
         didTryAutoLogin: true,
       };
     case LOGIN_SUCCESS:
       console.log('Logged in');
+      return {
+        ...state,
+        userId: action.userId,
+        profileExists: true,
+        didTryAutoLogin: true,
+        authError: null,
+      };
+    case SET_DATE_OF_BIRTH:
+      return {
+        ...state,
+        dateOfBirth: action.dateOfBirth,
+      };
+    case SIGN_UP_SUCCESS:
       return {
         ...state,
         userId: action.userId,

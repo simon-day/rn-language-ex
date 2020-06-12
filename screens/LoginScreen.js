@@ -25,7 +25,7 @@ const LoginScreen = (props) => {
     setErrorMessage(null);
     try {
       // await dispatch(authActions.login(email, password));
-      dispatch(authActions.signInTest(email, password));
+      dispatch(authActions.signIn(email, password));
     } catch (error) {
       setErrorMessage(error.message);
     }

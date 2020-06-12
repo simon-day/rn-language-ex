@@ -8,6 +8,8 @@ export const SET_NATIVE_LANGUAGE = 'SET_NATIVE_LANGUAGE';
 export const SET_TARGET_LANGUAGE = 'SET_TARGET_LANGUAGE';
 export const SET_GENDER = 'SET_GENDER';
 export const SET_LOCATION = 'SET_LOCATION';
+export const SET_DATE_OF_BIRTH = 'SET_DATE_OF_BIRTH';
+export const SET_FORMATTED_LOCATION = 'SET_FORMATTED_LOCATION';
 
 export const setNewUser = () => {
   return { type: SET_NEW_USER };
@@ -27,6 +29,10 @@ export const setLocation = (userId, coords) => {
       console.log(error);
     }
   };
+};
+
+export const setFormattedLocation = (loc) => {
+  return { type: SET_FORMATTED_LOCATION, formattedLocation: loc };
 };
 
 export const setGender = (userId, gender) => {
@@ -141,21 +147,29 @@ export const fetchProfileData = (userId) => {
       if (doc.data().location) {
         userData.location = doc.data().location;
       }
+      if (doc.data().dateOfBirth !== undefined) {
+        userData.dateOfBirth = doc.data().dateOfBirth;
+      }
     }
 
-    const newUrl = await firebase
-      .storage()
-      .ref(`${userId}/images/avatar.jpg`)
-      .getDownloadURL();
+    try {
+      const newUrl = await firebase
+        .storage()
+        .ref(`${userId}/images/avatar.jpg`)
+        .getDownloadURL();
 
-    if (newUrl) {
-      userData.profilePhoto = newUrl;
+      if (newUrl) {
+        userData.profilePhoto = newUrl;
+      }
+      dispatch({
+        type: FETCH_PROFILE_DATA,
+        userData: userData,
+      });
+    } catch (error) {
+      dispatch({
+        type: FETCH_PROFILE_DATA,
+        userData: userData,
+      });
     }
-
-    // dispatch(fetchProfilePhoto(userId));
-    dispatch({
-      type: FETCH_PROFILE_DATA,
-      userData: userData,
-    });
   };
 };

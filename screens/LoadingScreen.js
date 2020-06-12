@@ -15,9 +15,8 @@ const StartupScreen = (props) => {
 
   firebase.auth().onAuthStateChanged((user) => {
     if (user) {
-      console.log('Here we are');
-
-      dispatch(authActions.profileExists(true, user.uid));
+      const { uid, displayName } = user;
+      dispatch(authActions.profileExists(true, uid, displayName));
     } else {
       dispatch(authActions.profileExists(false));
       dispatch(authActions.setDidTryAL());
