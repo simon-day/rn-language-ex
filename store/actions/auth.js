@@ -34,6 +34,16 @@ export const profileExists = (YorN, userId = null, displayName = null) => {
   };
 };
 
+export const googleSignIn = () => {
+  return async (dispatch) => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+
+    await firebase.auth().signInWithRedirect(provider);
+    const response = firebase.auth().getRedirectResult();
+    console.log(response);
+  };
+};
+
 export const signIn = (email, password) => {
   return (dispatch) => {
     firebase
@@ -43,6 +53,7 @@ export const signIn = (email, password) => {
         dispatch({ type: LOGIN_SUCCESS, userId: res.user.uid });
       })
       .catch((err) => {
+        console.log('here');
         dispatch({ type: LOGIN_ERROR, err });
       });
   };
@@ -72,15 +83,6 @@ export const setDisplayName = (name) => {
     dispatch({ type: SET_DISPLAYNAME, displayName: name });
   };
 };
-
-// export const setDateOfBirth = (dateOfBirth, userId) => {
-//   return async (dispatch) => {
-//     try {
-//     } catch (error) {
-//       console.log(error);
-//     }
-//   };
-// };
 
 export const signUp = (name, email, password, dateOfBirth) => {
   return async (dispatch) => {

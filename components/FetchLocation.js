@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import * as Location from 'expo-location';
 import * as Permissions from 'expo-permissions';
-import env from '../env';
 import * as userActions from '../store/actions/user';
 
 const FetchLocation = (props) => {
@@ -18,7 +17,6 @@ const FetchLocation = (props) => {
   console.log('FetchLocationCalled');
   const [userLocation, setUserLocation] = useState();
   const [isFetching, setisFetching] = useState(false);
-  const [formattedLocation, setFormattedLocation] = useState('');
 
   useEffect(() => {
     setCoordsHandler();
@@ -41,7 +39,6 @@ const FetchLocation = (props) => {
     const hasPermission = await verifyPermissions();
 
     if (!hasPermission) {
-      setUserLocation('You must allow Exchange to access your location');
       return;
     }
 
@@ -57,10 +54,6 @@ const FetchLocation = (props) => {
           lng: location.coords.longitude,
         })
       );
-      setUserLocation({
-        lat: location.coords.latitude,
-        lng: location.coords.longitude,
-      });
     } catch (error) {
       Alert.alert(
         'Could not fetch location!',
@@ -68,7 +61,6 @@ const FetchLocation = (props) => {
         [{ text: 'OK' }]
       );
     }
-
     setisFetching(false);
   };
 

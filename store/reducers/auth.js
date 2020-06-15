@@ -31,7 +31,6 @@ export default (state = initialState, action) => {
         didTryAutoLogin: true,
       };
     case LOGIN_SUCCESS:
-      console.log('Logged in');
       return {
         ...state,
         userId: action.userId,
@@ -56,7 +55,7 @@ export default (state = initialState, action) => {
       console.log('Logged in failed');
       return {
         ...state,
-        authError: 'Login Failed',
+        authError: 'Your email and/or password is incorrect',
         didTryAutoLogin: false,
         profileExists: false,
       };

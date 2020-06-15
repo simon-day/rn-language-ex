@@ -15,6 +15,22 @@ export const setNewUser = () => {
   return { type: SET_NEW_USER };
 };
 
+export const setDateOfBirth = (userId, dateOfBirth) => {
+  return async (dispatch) => {
+    try {
+      await db.collection('userData').doc(userId).set(
+        {
+          dateOfBirth: dateOfBirth,
+        },
+        { merge: true }
+      );
+      dispatch({ type: SET_DATE_OF_BIRTH, dateOfBirth: dateOfBirth });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+};
+
 export const setLocation = (userId, coords) => {
   return async (dispatch) => {
     try {

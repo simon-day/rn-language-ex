@@ -16,10 +16,10 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Permissions from 'expo-permissions';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
-
 import * as userActions from '../store/actions/user';
 import * as authActions from '../store/actions/auth';
 import env from '../env';
+import DateofBirthInput from '../components/DateOfBirthInput';
 
 const ProfileScreen = (props) => {
   const dispatch = useDispatch();
@@ -45,7 +45,6 @@ const ProfileScreen = (props) => {
     ? moment().diff(dateOfBirth, 'years')
     : moment().diff(newUserDateOfBirth, 'years');
 
-  // const [formattedLocation, setFormattedLocation] = useState('');
   const [isFetching, setisFetching] = useState(false);
 
   useEffect(() => {
@@ -59,8 +58,6 @@ const ProfileScreen = (props) => {
   }, [profilePhoto]);
 
   const fetchFormattedLocation = async () => {
-    console.log('formatting API Call');
-
     const geoResponse = await fetch(
       `https://reverse.geocoder.ls.hereapi.com/6.2/reversegeocode.json?prox=${location.lat},${location.lng},250&mode=retrieveAddresses&maxresults=1&gen=9&apiKey=${env.geoCodeApi}&lang=en-US`
     );
@@ -182,6 +179,15 @@ const ProfileScreen = (props) => {
           style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
           size="large"
         />
+      </View>
+    );
+  }
+
+  if (!dateOfBirth) {
+    return (
+      <View style={{ position: 'absolute', width: '100%', height: '100%' }}>
+        <Text>Enter your date of birth to continue</Text>
+        <DateofBirthInput userId={userId} />
       </View>
     );
   }

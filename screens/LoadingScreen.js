@@ -9,6 +9,7 @@ import { useDispatch } from 'react-redux';
 import * as authActions from '../store/actions/auth';
 import * as userActions from '../store/actions/user';
 import * as firebase from 'firebase';
+import { db } from '../Fire';
 
 const StartupScreen = (props) => {
   const dispatch = useDispatch();
@@ -16,6 +17,7 @@ const StartupScreen = (props) => {
   firebase.auth().onAuthStateChanged((user) => {
     if (user) {
       const { uid, displayName } = user;
+
       dispatch(authActions.profileExists(true, uid, displayName));
     } else {
       dispatch(authActions.profileExists(false));

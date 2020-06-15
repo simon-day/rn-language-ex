@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useState, useEffect, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import * as firebase from 'firebase';
 import {
   View,
   SafeAreaView,
@@ -10,24 +11,137 @@ import {
   StatusBar,
   Image,
   LayoutAnimation,
+  KeyboardAvoidingView,
 } from 'react-native';
+import { SocialIcon, Button } from 'react-native-elements';
 import * as authActions from '../store/actions/auth';
+import * as Google from 'expo-google-app-auth';
+import { validateEmail } from '../utilities/validation';
+import DividerWithMiddleText from '../components/DividerWithMiddleText';
+import env from '../env';
 
 const LoginScreen = (props) => {
   const dispatch = useDispatch();
+  const emailField = useRef();
+  const passwordField = useRef();
+
+  const [showEmailPasswordLogin, setShowEmailPasswordLogin] = useState(false);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const authError = useSelector((state) => state.auth.authError);
+
+  useEffect(() => {
+    console.log('authError: ', authError);
+    setErrorMessage(authError);
+  }, [authError]);
+
+  useEffect(() => {
+    if (showEmailPasswordLogin) {
+      emailField.current.focus();
+    }
+  }, [showEmailPasswordLogin]);
+
   const authHandler = async () => {
     setErrorMessage(null);
+
+    if (!validateEmail(email)) {
+      setErrorMessage('Invalid email');
+      return;
+    }
+
+    if (password.length <= 6) {
+      setErrorMessage('Password must be at least 6 characters long');
+      return;
+    }
+
     try {
       // await dispatch(authActions.login(email, password));
       dispatch(authActions.signIn(email, password));
     } catch (error) {
+      console.log('here');
       setErrorMessage(error.message);
+    }
+  };
+
+  const isUserEqual = (googleUser, firebaseUser) => {
+    if (firebaseUser) {
+      var providerData = firebaseUser.providerData;
+      console.log('here');
+      for (var i = 0; i < providerData.length; i++) {
+        if (
+          providerData[i].providerId ===
+            firebase.auth.GoogleAuthProvider.PROVIDER_ID &&
+          providerData[i].uid === googleUser.getBasicProfile().getId()
+        ) {
+          // We don't need to reauth the Firebase connection.
+          console.log('WHATWAT');
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
+  const onSignIn = (googleUser) => {
+    // We need to register an Observer on Firebase Auth to make sure auth is initialized.
+    var unsubscribe = firebase.auth().onAuthStateChanged((firebaseUser) => {
+      unsubscribe();
+      // Check if we are already signed-in Firebase with the correct user.
+      if (!isUserEqual(googleUser, firebaseUser)) {
+        // Build Firebase credential with the Google ID token.
+        var credential = firebase.auth.GoogleAuthProvider.credential(
+          googleUser.idToken,
+          googleUser.accessToken
+        );
+        // Sign in with credential from the Google user.
+        firebase
+          .auth()
+          .signInWithCredential(credential)
+          .then((res) => {
+            if (res.additionalUserInfo.isNewUser) {
+              console.log('NEWUSER SETAGE');
+              props.navigation.navigate('AskForAge');
+            }
+
+            console.log('user signed in');
+          })
+          .catch((error) => {
+            // Handle Errors here.
+            console.log(error);
+            var errorCode = error.code;
+            var errorMessage = error.message;
+            // The email of the user's account used.
+            var email = error.email;
+            // The firebase.auth.AuthCredential type that was used.
+            var credential = error.credential;
+            // ...
+          });
+      } else {
+        console.log('User already signed-in Firebase.');
+      }
+    });
+  };
+
+  const signInWithGoogleAsync = async () => {
+    try {
+      const result = await Google.logInAsync({
+        androidClientId: env.androidClientId,
+        iosClientId: env.iosClientId,
+        scopes: ['profile', 'email'],
+      });
+
+      if (result.type === 'success') {
+        onSignIn(result);
+        return result.accessToken;
+      } else {
+        return { cancelled: true };
+      }
+    } catch (e) {
+      return { error: true };
     }
   };
 
@@ -46,7 +160,6 @@ const LoginScreen = (props) => {
           opacity: 0.85,
         }}
       />
-
       <Image
         source={require('../assets/authHeader.jpg')}
         style={{
@@ -59,56 +172,110 @@ const LoginScreen = (props) => {
           opacity: 0.7,
         }}
       />
-
       <Image
         source={require('../assets/logo.png')}
         style={{
-          marginTop: -200,
+          marginTop: -245,
           alignSelf: 'center',
-          transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }],
+          transform: [{ scaleX: 0.75 }, { scaleY: 0.75 }],
         }}
       />
-
       <Text style={styles.greeting}>{`Hello again.\nWelcome back.`}</Text>
       <View style={styles.errorMessage}>
         {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
       </View>
-
-      <View style={styles.form}>
-        <View>
-          <Text style={styles.inputTitle}>Email Address</Text>
-          <TextInput
-            style={styles.input}
-            autoCapitalize="none"
-            onChangeText={(text) => setEmail(text)}
-            value={email}
-          />
+      <KeyboardAvoidingView behavior="position" keyboardVerticalOffset={-65}>
+        <SocialIcon
+          style={{
+            width: '86%',
+            alignSelf: 'center',
+            fontWeight: '500',
+          }}
+          title="Sign In With Google"
+          Component={TouchableOpacity}
+          type="google"
+          button
+          onPress={signInWithGoogleAsync}
+        />
+        <View style={{ marginVertical: 5 }}>
+          <DividerWithMiddleText text="OR" />
         </View>
-        <View style={{ marginTop: 32 }}>
-          <Text style={styles.inputTitle}>Password</Text>
-          <TextInput
-            style={styles.input}
-            secureTextEntry
-            autoCapitalize="none"
-            onChangeText={(text) => setPassword(text)}
-            value={password}
-          />
+        <SocialIcon
+          style={{
+            width: '86%',
+            alignSelf: 'center',
+            fontWeight: '500',
+          }}
+          title="Sign In With Facebook"
+          Component={TouchableOpacity}
+          type="facebook"
+          button
+          onPress={() => console.log('TODO')}
+        />
+        <View style={{ marginTop: 5, marginBottom: 15 }}>
+          <DividerWithMiddleText text="OR" />
         </View>
-      </View>
 
-      <TouchableOpacity style={styles.button} onPress={authHandler}>
-        <Text style={{ color: '#FFF', fontWeight: '500' }}>Sign in</Text>
-      </TouchableOpacity>
+        {showEmailPasswordLogin && (
+          <View style={styles.form}>
+            <View>
+              <Text style={styles.inputTitle}>Email Address</Text>
+              <TextInput
+                style={styles.input}
+                autoCapitalize="none"
+                onChangeText={(text) => setEmail(text)}
+                value={email}
+                ref={emailField}
+                onSubmitEditing={() => passwordField.current.focus()}
+              />
+            </View>
+            <View style={{ marginTop: 32 }}>
+              <Text style={styles.inputTitle}>Password</Text>
+              <TextInput
+                style={styles.input}
+                secureTextEntry
+                autoCapitalize="none"
+                onChangeText={(text) => setPassword(text)}
+                value={password}
+                ref={passwordField}
+              />
+            </View>
+          </View>
+        )}
+        <TouchableOpacity
+          style={styles.button}
+          onPress={
+            !showEmailPasswordLogin
+              ? () => setShowEmailPasswordLogin(true)
+              : authHandler
+          }
+        >
+          <Text style={{ color: '#FFF', fontWeight: '500' }}>
+            {showEmailPasswordLogin
+              ? 'Sign In'
+              : 'Sign in with email and password'}
+          </Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={{ alignSelf: 'center', marginTop: 32 }}
-        onPress={() => props.navigation.navigate('Register')}
-      >
-        <Text style={{ color: '#414959', fontSize: 13 }}>
-          New to Exchange?{' '}
-          <Text style={{ fontWeight: '500', color: '#E9446A' }}>Sign Up</Text>
-        </Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={{ alignSelf: 'center', marginTop: 32 }}
+          onPress={() => props.navigation.navigate('Register')}
+        >
+          <Text
+            style={{
+              color: '#414959',
+              fontSize: 13,
+              paddingHorizontal: 50,
+              textAlign: 'center',
+            }}
+          >
+            Don't have a social account?{' '}
+            <Text style={{ fontWeight: '500', color: '#E9446A' }}>
+              Sign up with email instead
+            </Text>
+          </Text>
+        </TouchableOpacity>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -119,13 +286,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   greeting: {
-    marginTop: 10,
+    // marginTop: 10,
     fontSize: 18,
     fontWeight: '400',
     textAlign: 'center',
   },
   errorMessage: {
-    height: 72,
+    height: 52,
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: 36,
@@ -137,7 +304,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   form: {
-    marginBottom: 48,
+    marginBottom: 32,
     marginHorizontal: 30,
   },
   inputTitle: {
@@ -154,6 +321,7 @@ const styles = StyleSheet.create({
   },
   button: {
     marginHorizontal: 30,
+    // marginTop: -20,
     backgroundColor: '#E9446A',
     borderRadius: 4,
     height: 52,

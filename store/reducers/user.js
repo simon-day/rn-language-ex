@@ -8,8 +8,9 @@ import {
   SET_GENDER,
   SET_LOCATION,
   SET_FORMATTED_LOCATION,
+  SET_DATE_OF_BIRTH,
 } from '../actions/user';
-import { SET_DATE_OF_BIRTH } from '../actions/auth';
+// import { SET_DATE_OF_BIRTH } from '../actions/auth';
 import { LOGOUT } from '../actions/auth';
 
 const initialState = {
@@ -63,6 +64,11 @@ export default (state = initialState, action) => {
       return {
         ...state,
         location: action.location,
+      };
+    case SET_DATE_OF_BIRTH:
+      return {
+        ...state,
+        dateOfBirth: action.dateOfBirth,
       };
     case SET_FORMATTED_LOCATION:
       return {

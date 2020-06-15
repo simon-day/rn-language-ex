@@ -7,6 +7,7 @@ import RegisterScreen, {
   screenOptions as registerScreenOptions,
 } from '../screens/RegisterScreen';
 import AccountSetUpScreen from '../screens/AccountSetUpScreen';
+import AskForAgeScreen from '../screens/AskForAgeScreen';
 
 const AuthStackNavigator = createStackNavigator();
 
@@ -26,6 +27,11 @@ const AuthNavigator = () => {
       <AuthStackNavigator.Screen
         name="Setup"
         component={AccountSetUpScreen}
+        // options={registerScreenOptions}
+      />
+      <AuthStackNavigator.Screen
+        name="AskForAge"
+        component={AskForAgeScreen}
         // options={registerScreenOptions}
       />
     </AuthStackNavigator.Navigator>
