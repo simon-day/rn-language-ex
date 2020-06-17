@@ -8,11 +8,6 @@ import AppNavigator from './navigation/AppNavigator';
 import authReducer from './store/reducers/auth';
 import userReducer from './store/reducers/user';
 import { composeWithDevTools } from 'redux-devtools-extension';
-import * as firebase from 'firebase';
-import FirebaseKeys from './config';
-
-var provider = new firebase.auth.GoogleAuthProvider();
-console.log('PROVIDER: ', provider);
 
 import { decode, encode } from 'base-64';
 if (!global.btoa) {
@@ -21,8 +16,6 @@ if (!global.btoa) {
 if (!global.atob) {
   global.atob = decode;
 }
-
-// firebase.initializeApp(FirebaseKeys);
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -41,12 +34,3 @@ export default function App() {
     </Provider>
   );
 }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: '#fff',
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//   },
-// });

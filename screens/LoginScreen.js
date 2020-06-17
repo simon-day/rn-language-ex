@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { SocialIcon, Button } from 'react-native-elements';
 import * as authActions from '../store/actions/auth';
+import * as userActions from '../store/actions/user';
 import * as Google from 'expo-google-app-auth';
 import { validateEmail } from '../utilities/validation';
 import DividerWithMiddleText from '../components/DividerWithMiddleText';
@@ -26,6 +27,7 @@ const LoginScreen = (props) => {
   const passwordField = useRef();
 
   const [showEmailPasswordLogin, setShowEmailPasswordLogin] = useState(false);
+  const [showGreeting, setShowGreeting] = useState(true);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,7 +37,6 @@ const LoginScreen = (props) => {
   const authError = useSelector((state) => state.auth.authError);
 
   useEffect(() => {
-    console.log('authError: ', authError);
     setErrorMessage(authError);
   }, [authError]);
 
@@ -70,7 +71,6 @@ const LoginScreen = (props) => {
   const isUserEqual = (googleUser, firebaseUser) => {
     if (firebaseUser) {
       var providerData = firebaseUser.providerData;
-      console.log('here');
       for (var i = 0; i < providerData.length; i++) {
         if (
           providerData[i].providerId ===
@@ -78,7 +78,6 @@ const LoginScreen = (props) => {
           providerData[i].uid === googleUser.getBasicProfile().getId()
         ) {
           // We don't need to reauth the Firebase connection.
-          console.log('WHATWAT');
           return true;
         }
       }
@@ -102,9 +101,14 @@ const LoginScreen = (props) => {
           .auth()
           .signInWithCredential(credential)
           .then((res) => {
+            const photoUrl = res.user.photoURL;
+            const largerPhoto = photoUrl.replace('s96-c', 's400-c');
+
+            const userId = res.user.uid;
+
             if (res.additionalUserInfo.isNewUser) {
-              console.log('NEWUSER SETAGE');
-              props.navigation.navigate('AskForAge');
+              dispatch(userActions.addProfilePhoto(userId, largerPhoto));
+              // props.navigation.navigate('AskForAge');
             }
 
             console.log('user signed in');
@@ -135,6 +139,7 @@ const LoginScreen = (props) => {
       });
 
       if (result.type === 'success') {
+        dispatch(authActions.setDisplayName(result.user.givenName));
         onSignIn(result);
         return result.accessToken;
       } else {
@@ -180,7 +185,9 @@ const LoginScreen = (props) => {
           transform: [{ scaleX: 0.75 }, { scaleY: 0.75 }],
         }}
       />
-      <Text style={styles.greeting}>{`Hello again.\nWelcome back.`}</Text>
+      {showGreeting && (
+        <Text style={styles.greeting}>{`Hello again.\nWelcome back.`}</Text>
+      )}
       <View style={styles.errorMessage}>
         {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
       </View>
@@ -227,6 +234,8 @@ const LoginScreen = (props) => {
                 value={email}
                 ref={emailField}
                 onSubmitEditing={() => passwordField.current.focus()}
+                onFocus={() => setShowGreeting(false)}
+                onBlur={() => setShowGreeting(true)}
               />
             </View>
             <View style={{ marginTop: 32 }}>
@@ -238,6 +247,8 @@ const LoginScreen = (props) => {
                 onChangeText={(text) => setPassword(text)}
                 value={password}
                 ref={passwordField}
+                onFocus={() => setShowGreeting(false)}
+                onBlur={() => setShowGreeting(true)}
               />
             </View>
           </View>

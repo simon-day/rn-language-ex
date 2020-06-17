@@ -63,24 +63,17 @@ const RegisterScreen = (props) => {
     }
 
     if (text.length === 10) {
-      // console.log(text);
       let dateFormat = 'DD/MM/YYYY';
-
       let correctFormatDate = moment(text.toString(), dateFormat);
 
-      console.log(new Date(correctFormatDate).getTime());
-
       if (!moment(correctFormatDate).isValid()) {
-        console.log('HERE');
         setErrorMessage('Invalid date');
         setDateOfBirth('');
-
         return;
       }
     }
 
     setDateOfBirth(text);
-    // setErrorMessage(null);
   };
 
   const authHandler = async () => {
@@ -129,25 +122,12 @@ const RegisterScreen = (props) => {
       let dateFormat = 'DD/MM/YYYY';
       let formattedDate = moment(dateOfBirth.toString(), dateFormat);
       const DOB = new Date(formattedDate).getTime();
-      console.log(DOB);
+
       dispatch(authActions.signUp(name, email, password, DOB));
     } catch (error) {
       setErrorMessage('An account with this email already exists');
     }
-
-    // props.navigation.navigate('Setup', { name, email, password });
-
-    // try {
-    //
-    // } catch (error) {
-    //   setErrorMessage(error.message);
-    // }
   };
-  // if (dateOfBirth.length === 10) {
-  //   console.log('JERE');
-  //   console.log(dateOfBirth);
-  //   console.log(moment(moment(dateOfBirth)).isValid());
-  // }
 
   return (
     <SafeAreaView style={styles.container}>

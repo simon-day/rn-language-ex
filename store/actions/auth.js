@@ -17,30 +17,14 @@ export const PROFILE_EXISTS = 'PROFILE_EXISTS';
 export const SET_DATE_OF_BIRTH = 'SET_DATE_OF_BIRTH ';
 import * as firebase from 'firebase';
 import { db } from '../../Fire';
-import { fetchProfileData } from './user';
 
-export const profileExists = (YorN, userId = null, displayName = null) => {
+export const profileExists = (YorN, userId = null) => {
   return async (dispatch) => {
-    if (userId !== null) {
-      dispatch(fetchProfileData(userId));
-    }
-
     dispatch({
       type: PROFILE_EXISTS,
       exists: YorN,
       userId: userId,
-      displayName,
     });
-  };
-};
-
-export const googleSignIn = () => {
-  return async (dispatch) => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-
-    await firebase.auth().signInWithRedirect(provider);
-    const response = firebase.auth().getRedirectResult();
-    console.log(response);
   };
 };
 
@@ -53,7 +37,6 @@ export const signIn = (email, password) => {
         dispatch({ type: LOGIN_SUCCESS, userId: res.user.uid });
       })
       .catch((err) => {
-        console.log('here');
         dispatch({ type: LOGIN_ERROR, err });
       });
   };
@@ -90,7 +73,6 @@ export const signUp = (name, email, password, dateOfBirth) => {
       const response = await firebase
         .auth()
         .createUserWithEmailAndPassword(email, password);
-      // console.log('UMMM: ', response);
       await firebase.auth().currentUser.updateProfile({
         displayName: name,
       });
@@ -102,7 +84,6 @@ export const signUp = (name, email, password, dateOfBirth) => {
         },
         { merge: true }
       );
-      console.log('hmm');
       dispatch({
         type: SET_DATE_OF_BIRTH,
         dateOfBirth,

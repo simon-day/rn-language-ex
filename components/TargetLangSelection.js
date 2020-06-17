@@ -56,7 +56,6 @@ const TargetLangSelection = (props) => {
     setFilteredLanguages(
       copiedLanguagesList.filter((language) => language.includes(searchTerm))
     );
-    // console.log(copiedLanguagesList);
   };
 
   useEffect(() => {

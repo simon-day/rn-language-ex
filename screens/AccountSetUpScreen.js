@@ -20,9 +20,7 @@ import NativeLangSelection from '../components/NativeLangSelection';
 import TargetLangSelection from '../components/TargetLangSelection';
 
 const AccountSetUpScreen = (props) => {
-  console.log('props:', props);
   const userId = useSelector((state) => state.auth.userId);
-  console.log(userId);
 
   const [checkedMale, setCheckedMale] = useState(false);
   const [checkedFemale, setCheckedFemale] = useState(false);
@@ -35,7 +33,6 @@ const AccountSetUpScreen = (props) => {
     'Select your target language...'
   );
   const [editingTargetLanguage, setEditingTargetLanguage] = useState(false);
-  console.log('targetLang: ', targetLanguage);
 
   const [profilePhoto, setProfilePhoto] = useState(
     require('../assets/placeholderprofilephoto.png')

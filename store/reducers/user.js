@@ -11,14 +11,14 @@ import {
   SET_DATE_OF_BIRTH,
 } from '../actions/user';
 // import { SET_DATE_OF_BIRTH } from '../actions/auth';
-import { LOGOUT } from '../actions/auth';
+import { LOGOUT, SIGNOUT_SUCCESS } from '../actions/auth';
 
 const initialState = {
   profilePhoto: null,
   nativeLanguage: null,
   targetLanguage: null,
-  age: null,
-  locaton: null,
+  userBio: null,
+  location: null,
   formattedLocation: null,
   gender: null,
   dateOfBirth: null,
@@ -41,26 +41,12 @@ export default (state = initialState, action) => {
       };
     case FETCH_PROFILE_DATA:
       const userData = action.userData;
-      const {
-        nativeLanguage,
-        targetLanguage,
-        gender,
-        profilePhoto,
-        location,
-        dateOfBirth,
-      } = userData;
 
       return {
         ...state,
-        gender: gender || null,
-        nativeLanguage: nativeLanguage || null,
-        targetLanguage: targetLanguage || null,
-        profilePhoto: profilePhoto || null,
-        location: location || null,
-        dateOfBirth: dateOfBirth || null,
+        ...userData,
       };
     case SET_LOCATION:
-      console.log(action.location);
       return {
         ...state,
         location: action.location,
@@ -69,6 +55,11 @@ export default (state = initialState, action) => {
       return {
         ...state,
         dateOfBirth: action.dateOfBirth,
+      };
+    case SET_DATE_OF_BIRTH:
+      return {
+        ...state,
+        userBio: action.userBio,
       };
     case SET_FORMATTED_LOCATION:
       return {
@@ -90,6 +81,8 @@ export default (state = initialState, action) => {
         ...state,
         targetLanguage: action.targetLanguage,
       };
+    case SIGNOUT_SUCCESS:
+      return initialState;
     default:
       return state;
   }

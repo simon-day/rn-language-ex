@@ -14,7 +14,6 @@ import * as userActions from '../store/actions/user';
 
 const FetchLocation = (props) => {
   const dispatch = useDispatch();
-  console.log('FetchLocationCalled');
   const [userLocation, setUserLocation] = useState();
   const [isFetching, setisFetching] = useState(false);
 

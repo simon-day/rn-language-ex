@@ -26,7 +26,6 @@ export default (state = initialState, action) => {
       return {
         ...state,
         userId: action.userId,
-        username: action.displayName,
         profileExists: action.exists,
         didTryAutoLogin: true,
       };
@@ -65,24 +64,6 @@ export default (state = initialState, action) => {
         didTryAutoLogin: true,
         profileExists: false,
       };
-
-    // case AUTHENTICATE:
-    //   return {
-    //     ...state,
-    //     username: action.displayName,
-    //     token: action.token,
-    //     userId: action.userId,
-    //     didTryAutoLogin: true,
-    //   };
-    // case CHECK_ACCOUNT_EXISTS:
-    //   return {
-    //     ...state,
-    //   };
-    // case SET_NEW_USER:
-    //   return {
-    //     ...state,
-    //     newAccount: action.isNew,
-    //   };
     case SET_DISPLAYNAME:
       return {
         ...state,

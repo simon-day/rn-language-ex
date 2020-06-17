@@ -20,7 +20,6 @@ const DateOfBirthInput = (props) => {
     }
 
     const DOB = new Date(formattedDate).getTime();
-    console.log(DOB);
 
     dispatch(userActions.setDateOfBirth(props.userId, DOB));
   };
@@ -61,15 +60,11 @@ const DateOfBirthInput = (props) => {
     }
 
     if (text.length === 10) {
-      // console.log(text);
       let dateFormat = 'DD/MM/YYYY';
 
       let correctFormatDate = moment(text.toString(), dateFormat);
 
-      console.log(new Date(correctFormatDate).getTime());
-
       if (!moment(correctFormatDate).isValid()) {
-        console.log('HERE');
         setErrorMessage('Invalid date');
         setDateOfBirth('');
 
@@ -78,7 +73,6 @@ const DateOfBirthInput = (props) => {
     }
 
     setDateOfBirth(text);
-    // setErrorMessage(null);
   };
 
   return (
@@ -100,7 +94,9 @@ const DateOfBirthInput = (props) => {
         />
       </View>
       <TouchableOpacity style={styles.button} onPress={setDateOfBirthHandler}>
-        <Text style={{ color: '#FFF', fontWeight: '500' }}>Save</Text>
+        <Text style={{ color: '#FFF', fontWeight: '500', fontSize: 20 }}>
+          Save
+        </Text>
       </TouchableOpacity>
     </>
   );
@@ -109,12 +105,16 @@ const DateOfBirthInput = (props) => {
 const styles = StyleSheet.create({
   button: {
     marginTop: 20,
-    paddingHorizontal: 40,
+    paddingHorizontal: 60,
+    fontSize: 20,
     backgroundColor: '#E9446A',
     borderRadius: 4,
     height: 52,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  input: {
+    fontSize: 24,
   },
 });
 
