@@ -36,13 +36,14 @@ const ProfileScreen = (props) => {
   );
 
   const authData = useSelector((state) => state.auth);
-  const { userId, username, dateOfBirth: newUserDateOfBirth } = authData;
+  const { userId, dateOfBirth: newUserDateOfBirth } = authData;
 
   const userData = useSelector((state) => state.user);
   const {
     nativeLanguage,
     targetLanguage,
     profilePhoto,
+    username,
     gender,
     location,
     dateOfBirth,

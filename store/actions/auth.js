@@ -17,6 +17,8 @@ export const PROFILE_EXISTS = 'PROFILE_EXISTS';
 export const SET_DATE_OF_BIRTH = 'SET_DATE_OF_BIRTH ';
 import * as firebase from 'firebase';
 import { db } from '../../Fire';
+// import { SET_USERNAME } from './user';
+import * as userActions from './user';
 
 export const profileExists = (YorN, userId = null) => {
   return async (dispatch) => {
@@ -25,6 +27,14 @@ export const profileExists = (YorN, userId = null) => {
       exists: YorN,
       userId: userId,
     });
+  };
+};
+
+export const getDisplayName = (userId) => {
+  return async (dispatch) => {
+    const user = await firebase.auth().currentUser();
+    console.log('USER: ', user);
+    // dispatch()
   };
 };
 
@@ -61,12 +71,6 @@ export const setDidTryAL = () => {
   return { type: SET_DID_TRY_AL };
 };
 
-export const setDisplayName = (name) => {
-  return (dispatch) => {
-    dispatch({ type: SET_DISPLAYNAME, displayName: name });
-  };
-};
-
 export const signUp = (name, email, password, dateOfBirth) => {
   return async (dispatch) => {
     try {
@@ -77,7 +81,8 @@ export const signUp = (name, email, password, dateOfBirth) => {
         displayName: name,
       });
 
-      dispatch(setDisplayName(name));
+      // dispatch(setDisplayName(name));
+      dispatch(userActions.setUserName(response.user.uid, name));
       await db.collection('userData').doc(response.user.uid).set(
         {
           dateOfBirth: dateOfBirth,
@@ -88,10 +93,6 @@ export const signUp = (name, email, password, dateOfBirth) => {
         type: SET_DATE_OF_BIRTH,
         dateOfBirth,
       });
-
-      dispatch({ type: SIGN_UP_SUCCESS, userId: response.user.uid });
-      // dispatch DOB setup
-      // dispatch(setDateOfBirth(dateOfBirth, response.user.uid));
     } catch (error) {
       console.log(error);
     }

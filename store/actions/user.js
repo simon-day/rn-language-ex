@@ -9,8 +9,10 @@ export const SET_NATIVE_LANGUAGE = 'SET_NATIVE_LANGUAGE';
 export const SET_TARGET_LANGUAGE = 'SET_TARGET_LANGUAGE';
 export const SET_GENDER = 'SET_GENDER';
 export const SET_LOCATION = 'SET_LOCATION';
+export const SET_USERNAME = 'SET_USERNAME';
 export const SET_DATE_OF_BIRTH = 'SET_DATE_OF_BIRTH';
 export const SET_USER_BIO = 'SET_USER_BIO';
+export const SET_SHARED_PHOTO = 'SET_SHARED_PHOTO';
 export const SET_FORMATTED_LOCATION = 'SET_FORMATTED_LOCATION';
 import * as Location from 'expo-location';
 
@@ -28,6 +30,22 @@ export const setDateOfBirth = (userId, dateOfBirth) => {
         { merge: true }
       );
       dispatch({ type: SET_DATE_OF_BIRTH, dateOfBirth: dateOfBirth });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+};
+
+export const setUserName = (userId, username) => {
+  return async (dispatch) => {
+    try {
+      await db.collection('userData').doc(userId).set(
+        {
+          username,
+        },
+        { merge: true }
+      );
+      dispatch({ type: SET_USERNAME, username });
     } catch (error) {
       console.log(error);
     }
@@ -70,7 +88,24 @@ export const setLocation = (userId, coords) => {
           },
           { merge: true }
         );
-      dispatch({ type: SET_LOCATION, location: coords });
+      console.log('MADE IT HERE');
+      dispatch({ type: SET_LOCATION, location: { lat, lng } });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+};
+
+export const setSharedPhoto = (userId, photoUrl) => {
+  return async (dispatch) => {
+    try {
+      await db.collection('userData').doc(userId).set(
+        {
+          sharedPhoto: photoUrl,
+        },
+        { merge: true }
+      );
+      dispatch({ type: SET_SHARED_PHOTO, sharedPhoto: photoUrl });
     } catch (error) {
       console.log(error);
     }
@@ -106,7 +141,7 @@ export const setUserBio = (userId, userBio) => {
         },
         { merge: true }
       );
-      dispatch({ type: SET_USER_BIO, userBio });
+      // dispatch({ type: SET_USER_BIO, userBio });
     } catch (error) {
       console.log(error);
     }
@@ -151,6 +186,11 @@ export const addProfilePhoto = (userId, photoUri) => {
       const response = await fetch(photoUri);
       const blob = await response.blob();
       let ref = firebase.storage().ref().child(`${userId}/images/avatar.jpg`);
+
+      const URL = await ref.getDownloadURL();
+      dispatch(setSharedPhoto(userId, URL));
+      console.log('URLLLL: ', URL);
+
       await ref.put(blob);
 
       dispatch({ type: ADD_PROFILE_PHOTO, photo: photoUri });
@@ -180,6 +220,10 @@ export const fetchProfileData = (userId) => {
         dispatch({
           type: FETCH_PROFILE_PHOTO,
           photoUrl: profilePhoto,
+        });
+        dispatch({
+          type: SET_SHARED_PHOTO,
+          sharedPhoto: profilePhoto,
         });
       }
       dispatch({

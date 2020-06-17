@@ -9,6 +9,9 @@ import {
   SET_LOCATION,
   SET_FORMATTED_LOCATION,
   SET_DATE_OF_BIRTH,
+  SET_USER_BIO,
+  SET_USERNAME,
+  SET_SHARED_PHOTO,
 } from '../actions/user';
 // import { SET_DATE_OF_BIRTH } from '../actions/auth';
 import { LOGOUT, SIGNOUT_SUCCESS } from '../actions/auth';
@@ -18,8 +21,10 @@ const initialState = {
   nativeLanguage: null,
   targetLanguage: null,
   userBio: null,
+  username: null,
   location: null,
   formattedLocation: null,
+  sharedPhoto: null,
   gender: null,
   dateOfBirth: null,
 };
@@ -46,6 +51,16 @@ export default (state = initialState, action) => {
         ...state,
         ...userData,
       };
+    case SET_USERNAME:
+      return {
+        ...state,
+        username: action.username,
+      };
+    case SET_SHARED_PHOTO:
+      return {
+        ...state,
+        sharedPhoto: action.sharedPhoto,
+      };
     case SET_LOCATION:
       return {
         ...state,
@@ -56,11 +71,11 @@ export default (state = initialState, action) => {
         ...state,
         dateOfBirth: action.dateOfBirth,
       };
-    case SET_DATE_OF_BIRTH:
-      return {
-        ...state,
-        userBio: action.userBio,
-      };
+    // case SET_DATE_OF_BIRTH:
+    //   return {
+    //     ...state,
+    //     userBio: action.userBio,
+    //   };
     case SET_FORMATTED_LOCATION:
       return {
         ...state,
