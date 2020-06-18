@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import HomeScreen from '../screens/HomeScreen';
 import ProfileNavigator from './ProfileNavigator';
+import FindFriendsNavigator from './FindFriendsNavigator';
 import ProfileScreen from '../screens/ProfileScreen';
 import MessageScreen from '../screens/MessageScreen';
 import FindFriendsScreen from '../screens/FindFriendsScreen';
@@ -66,7 +67,7 @@ const BottomTabNavigator = () => {
       }}
     >
       <Tab.Screen name="Profile" component={ProfileNavigator} />
-      <Tab.Screen name="FindFriends" component={FindFriendsScreen} />
+      <Tab.Screen name="FindFriends" component={FindFriendsNavigator} />
       <Tab.Screen name="Messages" component={MessageScreen} />
     </Tab.Navigator>
   );

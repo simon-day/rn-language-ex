@@ -30,13 +30,12 @@ export const profileExists = (YorN, userId = null) => {
   };
 };
 
-export const getDisplayName = (userId) => {
-  return async (dispatch) => {
-    const user = await firebase.auth().currentUser();
-    console.log('USER: ', user);
-    // dispatch()
-  };
-};
+// export const getDisplayName = (userId) => {
+//   return async (dispatch) => {
+//     const user = await firebase.auth().currentUser();
+//     // dispatch()
+//   };
+// };
 
 export const signIn = (email, password) => {
   return (dispatch) => {
@@ -71,7 +70,7 @@ export const setDidTryAL = () => {
   return { type: SET_DID_TRY_AL };
 };
 
-export const signUp = (name, email, password, dateOfBirth) => {
+export const signUp = (name, email, password) => {
   return async (dispatch) => {
     try {
       const response = await firebase
@@ -89,10 +88,6 @@ export const signUp = (name, email, password, dateOfBirth) => {
         },
         { merge: true }
       );
-      dispatch({
-        type: SET_DATE_OF_BIRTH,
-        dateOfBirth,
-      });
     } catch (error) {
       console.log(error);
     }

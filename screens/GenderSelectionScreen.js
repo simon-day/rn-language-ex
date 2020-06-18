@@ -14,8 +14,6 @@ const LanguageSelectionScreen = (props) => {
 
   const { currentGender, userId } = props.route.params;
 
-  console.log('currentlySelecred: ', currentlySelected);
-
   useEffect(() => {
     setCurrentlySelected(currentGender);
   }, []);

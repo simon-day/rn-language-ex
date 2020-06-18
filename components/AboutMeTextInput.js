@@ -38,7 +38,7 @@ const AboutMeTextInput = (props) => {
   };
 
   return (
-    <View style={{ width: '100%' }}>
+    <View style={{ width: '100%', flex: 1 }}>
       <TextInput
         editable={!isLoading}
         // scrollEnabled={false}
@@ -54,7 +54,7 @@ const AboutMeTextInput = (props) => {
         numberOfLines={4}
         maxHeight={60}
         multiline={true} //allows for paragraphs to be entered by user
-        maxLength={244} //This is the guy you want to look at!!!!!
+        maxLength={200} //This is the guy you want to look at!!!!!
         placeholder="Tell your language partners a bit about yourself..."
         value={aboutMeText}
         onChangeText={textChangeHandler}

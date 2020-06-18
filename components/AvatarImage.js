@@ -86,7 +86,7 @@ const AvatarImage = (props) => {
       // renderPlaceholderContent={props.renderPlaceholderContent}
       placeholderStyle={{ backgroundColor: 'transparent' }}
       renderPlaceholderContent={<ActivityIndicator size="small" />}
-      showAccessory
+      showAccessory={props.showAccessory}
       onAccessoryPress={selectFromCameraRollHandler}
       size="xlarge"
       source={avatarImage || require('../assets/placeholderprofilephoto.png')}

@@ -7,18 +7,33 @@ import {
   FlatList,
   View,
   Image,
+  RefreshControl,
 } from 'react-native';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
 import { db } from '../Fire';
+import FindFriendUser from '../components/FindFriendUser';
 import calculateDistance from '../utilities/calculateDistance';
 
 const FindFriendsScreen = (props) => {
   const [userList, setUserList] = useState();
   const [isFetching, setIsFetching] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const userId = useSelector((state) => state.auth.userId);
   const userCoords = useSelector((state) => state.user.location);
+
+  const wait = (timeout) => {
+    return new Promise((resolve) => {
+      setTimeout(resolve, timeout);
+    });
+  };
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+
+    wait(1500).then(() => setRefreshing(false));
+  }, [refreshing]);
 
   useEffect(() => {
     const getusers = async () => {
@@ -26,48 +41,55 @@ const FindFriendsScreen = (props) => {
 
       const list = snapshot.docs
         .map((doc) => {
-          console.log('doc.data(): ', doc.data());
           const friendCoords = doc.data().location;
-
           const distanceFromUser = Math.round(
             calculateDistance(userCoords, friendCoords)
           );
 
+          let sharedPhoto;
+
+          if (!doc.data().sharedPhoto) {
+            sharedPhoto = require('../assets/placeholderprofilephoto.png');
+          } else {
+            sharedPhoto = { uri: doc.data().sharedPhoto };
+          }
+
           return {
-            username: doc.data().username,
-            location: doc.data().formattedLocation,
-            bio: doc.data().userBio,
-            key: doc.id,
-            sharedPhoto: doc.data().sharedPhoto || null,
+            ...doc.data(),
+            sharedPhoto: sharedPhoto,
             distanceFromUser,
+            // username: doc.data().username,
+            // location: doc.data().formattedLocation,
+            // bio: doc.data().userBio,
+            key: doc.id,
           };
         })
         .filter((user) => user.key !== userId);
 
-      console.log(list);
       setUserList(list);
-      console.log('USERLIST: ', userList);
       setIsFetching(false);
     };
 
     getusers();
-  }, [userCoords]);
+  }, [userCoords, refreshing]);
 
   return (
     <SafeAreaView style={styles.container}>
       {userList && !isFetching && (
         <FlatList
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          showsVerticalScrollIndicator={false}
           data={userList}
           renderItem={({ item }) => (
-            <View>
-              <Text>{item.username}</Text>
-              {item.sharedPhoto && (
-                <Image
-                  style={{ width: 200, height: '100%' }}
-                  source={{ uri: item.sharedPhoto }}
-                />
-              )}
-            </View>
+            <FindFriendUser
+              navigation={props.navigation}
+              userData={item}
+              username={item.username}
+              distanceFromUser={item.distanceFromUser}
+              image={item.sharedPhoto}
+            />
           )}
         />
       )}
@@ -75,11 +97,13 @@ const FindFriendsScreen = (props) => {
   );
 };
 
+export const screenOptions = {
+  headerTitle: 'Find Language Exchange Friends',
+};
+
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    margin: 20,
   },
 });
 

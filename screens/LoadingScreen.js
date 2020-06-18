@@ -21,9 +21,7 @@ const StartupScreen = (props) => {
 
   firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
-      console.log('USER: ', user);
       const { uid } = user;
-      // dispatch(authActions.setDisplayName(displayName));
 
       const hasPermissions = await verifyPermissions();
 

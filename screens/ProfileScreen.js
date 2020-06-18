@@ -155,7 +155,7 @@ const ProfileScreen = (props) => {
           <StatusBar barStyle="light-content" />
 
           <View style={styles.avatarImage}>
-            <AvatarImage />
+            <AvatarImage showAccessory={true} />
 
             <Text style={styles.photoText}>
               {username || ''}, {age || ''}

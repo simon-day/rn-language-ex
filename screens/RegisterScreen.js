@@ -23,58 +23,58 @@ const RegisterScreen = (props) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [dateOfBirth, setDateOfBirth] = useState('');
+  // const [dateOfBirth, setDateOfBirth] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
 
-  const dateValidator = (text) => {
-    let inputArr = text.split('');
+  // const dateValidator = (text) => {
+  //   let inputArr = text.split('');
 
-    // if (inputArr.length === 0) {
-    //   setDateOfBirth('');
-    // }
+  //   // if (inputArr.length === 0) {
+  //   //   setDateOfBirth('');
+  //   // }
 
-    if (inputArr.length > 0 && !inputArr[0].match(/[0-3]/)) {
-      return;
-    }
+  //   if (inputArr.length > 0 && !inputArr[0].match(/[0-3]/)) {
+  //     return;
+  //   }
 
-    if (
-      inputArr.length > 1 &&
-      inputArr[0].match(/3/) &&
-      inputArr[1].match(/[2-9]/)
-    ) {
-      return;
-    }
+  //   if (
+  //     inputArr.length > 1 &&
+  //     inputArr[0].match(/3/) &&
+  //     inputArr[1].match(/[2-9]/)
+  //   ) {
+  //     return;
+  //   }
 
-    if (inputArr.length > 3 && !inputArr[3].match(/[0-1]/)) {
-      return;
-    }
+  //   if (inputArr.length > 3 && !inputArr[3].match(/[0-1]/)) {
+  //     return;
+  //   }
 
-    if (inputArr.length > 4 && !inputArr[4].match(/[0-9]/)) {
-      return;
-    }
+  //   if (inputArr.length > 4 && !inputArr[4].match(/[0-9]/)) {
+  //     return;
+  //   }
 
-    if (inputArr.length > 6 && !inputArr[6].match(/[1-2]/)) {
-      return;
-    }
+  //   if (inputArr.length > 6 && !inputArr[6].match(/[1-2]/)) {
+  //     return;
+  //   }
 
-    if (inputArr.length > 7 && !inputArr[7].match(/[0]|[9]/)) {
-      return;
-    }
+  //   if (inputArr.length > 7 && !inputArr[7].match(/[0]|[9]/)) {
+  //     return;
+  //   }
 
-    if (text.length === 10) {
-      let dateFormat = 'DD/MM/YYYY';
-      let correctFormatDate = moment(text.toString(), dateFormat);
+  //   if (text.length === 10) {
+  //     let dateFormat = 'DD/MM/YYYY';
+  //     let correctFormatDate = moment(text.toString(), dateFormat);
 
-      if (!moment(correctFormatDate).isValid()) {
-        setErrorMessage('Invalid date');
-        setDateOfBirth('');
-        return;
-      }
-    }
+  //     if (!moment(correctFormatDate).isValid()) {
+  //       setErrorMessage('Invalid date');
+  //       setDateOfBirth('');
+  //       return;
+  //     }
+  //   }
 
-    setDateOfBirth(text);
-  };
+  //   setDateOfBirth(text);
+  // };
 
   const authHandler = async () => {
     setErrorMessage(null);
@@ -102,28 +102,28 @@ const RegisterScreen = (props) => {
       return;
     }
 
-    if (dateOfBirth.length !== 10) {
-      setErrorMessage('Enter your birthday');
-      return;
-    }
+    // if (dateOfBirth.length !== 10) {
+    //   setErrorMessage('Enter your birthday');
+    //   return;
+    // }
 
-    if (dateOfBirth.length === 10) {
-      let dateFormat = 'DD/MM/YYYY';
-      let correctFormatDate = moment(dateOfBirth.toString(), dateFormat);
+    // if (dateOfBirth.length === 10) {
+    //   let dateFormat = 'DD/MM/YYYY';
+    //   let correctFormatDate = moment(dateOfBirth.toString(), dateFormat);
 
-      let years = moment().diff(correctFormatDate, 'years', false);
-      if (years < 16) {
-        setErrorMessage('You must be 16 years and above to use this app');
-        return;
-      }
-    }
+    //   let years = moment().diff(correctFormatDate, 'years', false);
+    //   if (years < 16) {
+    //     setErrorMessage('You must be 16 years and above to use this app');
+    //     return;
+    //   }
+    // }
 
     try {
-      let dateFormat = 'DD/MM/YYYY';
-      let formattedDate = moment(dateOfBirth.toString(), dateFormat);
-      const DOB = new Date(formattedDate).getTime();
+      // let dateFormat = 'DD/MM/YYYY';
+      // let formattedDate = moment(dateOfBirth.toString(), dateFormat);
+      // const DOB = new Date(formattedDate).getTime();
 
-      dispatch(authActions.signUp(name, email, password, DOB));
+      dispatch(authActions.signUp(name, email, password));
     } catch (error) {
       setErrorMessage('An account with this email already exists');
     }
@@ -166,7 +166,7 @@ const RegisterScreen = (props) => {
       <View
         style={{
           position: 'absolute',
-          top: 120,
+          top: 140,
           alignItems: 'center',
           width: '100%',
         }}
@@ -201,7 +201,7 @@ const RegisterScreen = (props) => {
             clearButtonMode="while-editing"
           />
         </View>
-        <View style={{ marginTop: 32 }}>
+        {/* <View style={{ marginTop: 32 }}>
           <Text style={styles.inputTitle}>Birthday</Text>
           <TextInputMask
             style={styles.input}
@@ -216,7 +216,7 @@ const RegisterScreen = (props) => {
             }}
             returnKeyType="done"
           />
-        </View>
+        </View> */}
         <View style={{ marginTop: 32 }}>
           <Text style={styles.inputTitle}>Password</Text>
           <TextInput
@@ -301,6 +301,7 @@ const styles = StyleSheet.create({
   form: {
     justifyContent: 'center',
     marginHorizontal: 30,
+    marginTop: 25,
   },
   inputTitle: {
     color: '#8A8F9E',
@@ -315,7 +316,7 @@ const styles = StyleSheet.create({
     color: '#161F3D',
   },
   button: {
-    marginBottom: 80,
+    marginBottom: 130,
     marginHorizontal: 30,
     backgroundColor: '#E9446A',
     borderRadius: 4,

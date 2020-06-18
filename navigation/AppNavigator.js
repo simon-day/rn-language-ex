@@ -5,6 +5,7 @@ import LoadingScreen from '../screens/LoadingScreen';
 import AuthNavigator from '../navigation/AuthNavigator';
 import BottomTabNavigator from '../navigation/BottomTabNavigator';
 import AskForAgeScreen from '../screens/AskForAgeScreen';
+// import ViewProfileScreen from '../screens/ViewProfileScreen';
 
 const AppNavigator = (props) => {
   const profileExists = useSelector((state) => !!state.auth.profileExists);
@@ -19,6 +20,12 @@ const AppNavigator = (props) => {
       {!profileExists && !didTryAutoLogin && <LoadingScreen />}
     </NavigationContainer>
   );
+
+  // return (
+  //   <NavigationContainer>
+  //     <ViewProfileScreen />
+  //   </NavigationContainer>
+  // );
 };
 
 export default AppNavigator;

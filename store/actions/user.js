@@ -187,14 +187,13 @@ export const addProfilePhoto = (userId, photoUri) => {
       const blob = await response.blob();
       let ref = firebase.storage().ref().child(`${userId}/images/avatar.jpg`);
 
-      const URL = await ref.getDownloadURL();
-      dispatch(setSharedPhoto(userId, URL));
-      console.log('URLLLL: ', URL);
-
       await ref.put(blob);
 
       dispatch({ type: ADD_PROFILE_PHOTO, photo: photoUri });
+      const URL = await ref.getDownloadURL();
+      dispatch(setSharedPhoto(userId, URL));
     } catch (error) {
+      console.log('ISTHISTHEERROR?');
       console.log(error);
     }
   };

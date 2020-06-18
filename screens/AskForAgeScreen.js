@@ -11,7 +11,7 @@ const AskForAge = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (userData.profilePhoto !== null) {
+    if (userData.username && !userData.age) {
       setIsLoading(false);
     }
   }, [userData]);
