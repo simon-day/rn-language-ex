@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, View, Text, Image } from 'react-native';
 import { Avatar, Badge, Icon } from 'react-native-elements';
 import * as firebase from 'firebase';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
 const FindFriendUser = (props) => {
   const {
@@ -26,15 +27,31 @@ const FindFriendUser = (props) => {
   }
 
   const [isOnline, setIsOnline] = useState();
+  const [lastSeen, setLastSeen] = useState();
 
   useEffect(() => {
     let onlineStatus = firebase.database().ref('status/' + key + '/state');
+    let lastChanged = firebase
+      .database()
+      .ref('status/' + key + '/last_changed');
     onlineStatus.on('value', function (snapshot) {
       if (snapshot.val() === 'online') {
+        setLastSeen(null);
         setIsOnline(true);
       } else {
+        lastChanged.on('value', (snapshot) => {
+          console.log(snapshot.val());
+          if (snapshot.val() === null) {
+            return;
+          }
+          setLastSeen(moment(new Date(snapshot.val())));
+        });
         setIsOnline(false);
       }
+      //   } else if (snapshot.val().state === 'offline') {
+      //     // let lastChanged = firebase.database().ref('status/' + key + '/last_changed');
+      //     setIsOnline(false);
+      //   }
       //   updateStarCount(postElement, snapshot.val());
     });
 
@@ -42,13 +59,18 @@ const FindFriendUser = (props) => {
   }, []);
 
   return (
-    <View style={styles.row}>
+    <TouchableOpacity
+      style={styles.row}
+      onPress={() =>
+        props.navigation.navigate('ViewProfile', { userId: key, username })
+      }
+    >
       <View style={styles.avatarContainer}>
-        <Avatar size="large" rounded source={props.image} />
+        <Avatar size="medium" rounded source={props.image} />
         {isOnline && (
           <Badge
             status="success"
-            badgeStyle={{ width: 20, height: 20, borderRadius: 20 }}
+            badgeStyle={{ width: 12, height: 12, borderRadius: 20 }}
             containerStyle={{ position: 'absolute', bottom: 2, right: 2 }}
           />
         )}
@@ -68,6 +90,13 @@ const FindFriendUser = (props) => {
         </View>
         <Text style={styles.locationText}>{formattedLocation}</Text>
         <Text style={styles.distanceText}>{distanceAway}km away</Text>
+        {lastSeen && (
+          <Text
+            style={{ textTransform: 'uppercase', fontSize: 9, marginTop: 6 }}
+          >
+            Last seen {lastSeen.fromNow()}
+          </Text>
+        )}
       </View>
       <View style={{ flexDirection: 'row' }}>
         <Ionicons
@@ -75,11 +104,14 @@ const FindFriendUser = (props) => {
           size={26}
           name="ios-arrow-dropright"
           onPress={() =>
-            props.navigation.navigate('ViewProfile', { userId: key })
+            props.navigation.navigate('ViewProfile', {
+              userId: key,
+              username: username,
+            })
           }
         />
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -88,15 +120,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
-    paddingBottom: 10,
-    marginVertical: 5,
+    paddingBottom: 6,
+    marginVertical: 3,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderColor: '#ccc',
   },
   avatarContainer: {},
   avatarImage: {
-    width: 80,
-    height: 80,
+    width: 90,
+    height: 90,
   },
   userInfoContainer: {
     // backgroundColor: 'red',
@@ -105,7 +137,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   usernameText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '500',
   },
   nameAgeHeader: {
@@ -113,13 +145,16 @@ const styles = StyleSheet.create({
   },
   ageText: {
     color: 'white',
-    fontSize: 13,
+    fontSize: 12,
   },
   locationText: {
-    paddingTop: 5,
+    paddingTop: 4,
+    fontSize: 12,
   },
   distanceText: {
-    paddingTop: 7,
+    marginTop: 3,
+    fontWeight: '300',
+    fontSize: 11,
   },
 });
 

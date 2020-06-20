@@ -53,6 +53,8 @@ export const setUserName = (userId, username) => {
 };
 
 export const setLocation = (userId, coords) => {
+  console.log('HERE');
+
   return async (dispatch) => {
     let lat;
     let lng;
@@ -88,7 +90,6 @@ export const setLocation = (userId, coords) => {
           },
           { merge: true }
         );
-      console.log('MADE IT HERE');
       dispatch({ type: SET_LOCATION, location: { lat, lng } });
     } catch (error) {
       console.log(error);

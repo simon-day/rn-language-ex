@@ -106,6 +106,8 @@ const ProfileScreen = (props) => {
         timeout: 5000,
       });
 
+      console.log('LOCATION: ', location);
+
       dispatch(
         userActions.setLocation(userId, {
           lat: location.coords.latitude,

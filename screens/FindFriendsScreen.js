@@ -64,7 +64,8 @@ const FindFriendsScreen = (props) => {
             key: doc.id,
           };
         })
-        .filter((user) => user.key !== userId);
+        .filter((user) => user.key !== userId)
+        .sort((a, b) => a.distanceFromUser - b.distanceFromUser);
 
       setUserList(list);
       setIsFetching(false);

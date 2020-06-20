@@ -66,8 +66,9 @@ const ViewProfileScreen = (props) => {
             showAccessory={false}
             size="xlarge"
             source={
-              { uri: userData.sharedPhoto } ||
-              require('../assets/placeholderprofilephoto.png')
+              userData.sharedPhoto
+                ? { uri: userData.sharedPhoto }
+                : require('../assets/placeholderprofilephoto.png')
             }
           />
           <View style={styles.nameAgeHeader}>
@@ -88,6 +89,15 @@ const ViewProfileScreen = (props) => {
         </View>
 
         <View style={styles.settingsBody}>
+          <View style={{ ...styles.settingsBodyRow }}>
+            <Text style={{ ...styles.bioSectionHeader, marginTop: 12 }}>
+              ABOUT {userData.username.toUpperCase() || '...'}
+            </Text>
+            <View style={{ ...styles.bioSectionContainer }}>
+              <Text style={styles.selfIntroBioSection}>{userData.userBio}</Text>
+            </View>
+          </View>
+
           <View style={styles.settingsBodyRow}>
             <Text style={{ ...styles.bioSectionHeader, marginTop: 12 }}>
               SPEAKS
@@ -114,15 +124,6 @@ const ViewProfileScreen = (props) => {
             </View>
           </View>
 
-          <View style={{ ...styles.settingsBodyRow }}>
-            <Text style={{ ...styles.bioSectionHeader, marginTop: 12 }}>
-              ABOUT {userData.username.toUpperCase() || '...'}
-            </Text>
-            <View style={{ ...styles.bioSectionContainer }}>
-              <Text style={styles.selfIntroBioSection}>{userData.userBio}</Text>
-            </View>
-          </View>
-
           <View style={styles.settingsBodyRow}>
             <Text style={{ ...styles.bioSectionHeader, marginTop: 12 }}>
               CURRENT LOCATION
@@ -137,6 +138,14 @@ const ViewProfileScreen = (props) => {
       </ScrollView>
     </SafeAreaView>
   );
+};
+
+export const screenOptions = (navData) => {
+  const username = navData.route.params.username;
+
+  return {
+    headerTitle: `${username}'s Profile`,
+  };
 };
 
 const styles = StyleSheet.create({
@@ -212,7 +221,7 @@ const styles = StyleSheet.create({
   },
   selfIntroBioSection: {
     flex: 1,
-    marginBottom: 20,
+    marginBottom: 15,
     maxHeight: 400,
     color: '#242424',
     fontWeight: '300',

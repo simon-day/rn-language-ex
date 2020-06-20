@@ -3,7 +3,9 @@ import { createStackNavigator } from '@react-navigation/stack';
 import FindFriendsScreen, {
   screenOptions as findFriendsScreenOptions,
 } from '../screens/FindFriendsScreen';
-import ViewProfileScreen from '../screens/ViewProfileScreen';
+import ViewProfileScreen, {
+  screenOptions as viewProfileScreenOptions,
+} from '../screens/ViewProfileScreen';
 
 const FindFriendsStackNavigator = createStackNavigator();
 
@@ -18,6 +20,7 @@ const FindFriendsNavigator = () => {
       <FindFriendsStackNavigator.Screen
         name="ViewProfile"
         component={ViewProfileScreen}
+        options={viewProfileScreenOptions}
         // options={languageselectionScreenOptions}
       />
       {/* <FindFriendsStackNavigator.Screen

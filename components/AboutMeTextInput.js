@@ -46,13 +46,13 @@ const AboutMeTextInput = (props) => {
         style={{
           fontWeight: '300',
           width: '95%',
-          maxHeight: 80,
+          maxHeight: 220,
           marginHorizontal: 15,
           marginVertical: 10,
         }}
         spellCheck={true}
         numberOfLines={4}
-        maxHeight={60}
+        maxHeight={220}
         multiline={true} //allows for paragraphs to be entered by user
         maxLength={200} //This is the guy you want to look at!!!!!
         placeholder="Tell your language partners a bit about yourself..."
