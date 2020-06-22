@@ -12,6 +12,8 @@ const FindFriendUser = (props) => {
     distanceFromUser,
     dateOfBirth,
     location,
+    isOnline,
+    lastSeen,
     key,
     formattedLocation,
     gender,
@@ -26,27 +28,27 @@ const FindFriendUser = (props) => {
     distanceAway = distanceFromUser;
   }
 
-  const [isOnline, setIsOnline] = useState();
-  const [lastSeen, setLastSeen] = useState();
+  const [isOnline2, setIsOnline2] = useState(isOnline);
+  const [lastSeen2, setLastSeen2] = useState(lastSeen);
 
   useEffect(() => {
+    console.log('in the finderUserItem ');
     let onlineStatus = firebase.database().ref('status/' + key + '/state');
     let lastChanged = firebase
       .database()
       .ref('status/' + key + '/last_changed');
     onlineStatus.on('value', function (snapshot) {
       if (snapshot.val() === 'online') {
-        setLastSeen(null);
-        setIsOnline(true);
+        setLastSeen2(null);
+        setIsOnline2(true);
       } else {
         lastChanged.on('value', (snapshot) => {
-          console.log(snapshot.val());
           if (snapshot.val() === null) {
             return;
           }
-          setLastSeen(moment(new Date(snapshot.val())));
+          setLastSeen2(snapshot.val());
         });
-        setIsOnline(false);
+        setIsOnline2(false);
       }
       //   } else if (snapshot.val().state === 'offline') {
       //     // let lastChanged = firebase.database().ref('status/' + key + '/last_changed');
@@ -55,19 +57,27 @@ const FindFriendUser = (props) => {
       //   updateStarCount(postElement, snapshot.val());
     });
 
-    return () => onlineStatus;
+    return () => {
+      onlineStatus.off();
+      lastChanged.off();
+    };
   }, []);
 
   return (
     <TouchableOpacity
       style={styles.row}
       onPress={() =>
-        props.navigation.navigate('ViewProfile', { userId: key, username })
+        props.navigation.navigate('ViewProfile', {
+          userId: key,
+          username,
+          lastSeen2,
+          isOnline2,
+        })
       }
     >
       <View style={styles.avatarContainer}>
         <Avatar size="medium" rounded source={props.image} />
-        {isOnline && (
+        {isOnline2 && (
           <Badge
             status="success"
             badgeStyle={{ width: 12, height: 12, borderRadius: 20 }}
@@ -90,11 +100,11 @@ const FindFriendUser = (props) => {
         </View>
         <Text style={styles.locationText}>{formattedLocation}</Text>
         <Text style={styles.distanceText}>{distanceAway}km away</Text>
-        {lastSeen && (
+        {lastSeen2 && (
           <Text
             style={{ textTransform: 'uppercase', fontSize: 9, marginTop: 6 }}
           >
-            Last seen {lastSeen.fromNow()}
+            Last seen {moment(new Date(lastSeen2)).fromNow()}
           </Text>
         )}
       </View>

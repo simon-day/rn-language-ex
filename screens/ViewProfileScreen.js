@@ -14,12 +14,12 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
-import { Avatar } from 'react-native-elements';
+import { Avatar, Badge } from 'react-native-elements';
 import env from '../env';
 import LoadingDataWithLogo from '../components/LoadingDataWithLogo';
 
 const ViewProfileScreen = (props) => {
-  const userId = props.route.params.userId;
+  const { userId, isOnline2, lastSeen2 } = props.route.params;
 
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(true);
@@ -71,6 +71,19 @@ const ViewProfileScreen = (props) => {
                 : require('../assets/placeholderprofilephoto.png')
             }
           />
+          {isOnline2 && (
+            <Badge
+              status="success"
+              badgeStyle={{
+                borderColor: '#f2f2f2',
+                borderWidth: 4,
+                width: 32,
+                height: 32,
+                borderRadius: 20,
+              }}
+              containerStyle={{ position: 'absolute', bottom: 60, right: 2 }}
+            />
+          )}
           <View style={styles.nameAgeHeader}>
             <Text style={styles.usernameText}>{userData.username}</Text>
             <View
@@ -86,6 +99,16 @@ const ViewProfileScreen = (props) => {
               </Text>
             </View>
           </View>
+          <Text
+            style={{
+              textTransform: 'uppercase',
+              fontSize: 10,
+              fontWeight: '300',
+              marginTop: 5,
+            }}
+          >
+            {lastSeen2 && `Online ${moment(new Date(lastSeen2)).fromNow()}`}
+          </Text>
         </View>
 
         <View style={styles.settingsBody}>

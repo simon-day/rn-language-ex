@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   StyleSheet,
   SafeAreaView,
   Text,
   FlatList,
+  Button,
   View,
   Image,
   RefreshControl,
+  TouchableOpacity,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
 import { db } from '../Fire';
@@ -18,7 +22,9 @@ import calculateDistance from '../utilities/calculateDistance';
 const FindFriendsScreen = (props) => {
   const [userList, setUserList] = useState();
   const [isFetching, setIsFetching] = useState(true);
+  const [sortBy, setSortBy] = useState('distance');
   const [refreshing, setRefreshing] = useState(false);
+  const [userStatusChange, setUserStatusChange] = useState(false);
 
   const userId = useSelector((state) => state.auth.userId);
   const userCoords = useSelector((state) => state.user.location);
@@ -35,47 +41,168 @@ const FindFriendsScreen = (props) => {
     wait(1500).then(() => setRefreshing(false));
   }, [refreshing]);
 
-  useEffect(() => {
-    const getusers = async () => {
-      const snapshot = await firebase.firestore().collection('userData').get();
+  useFocusEffect(
+    React.useCallback(() => {
+      const getusers = async () => {
+        const snapshot = await firebase
+          .firestore()
+          .collection('userData')
+          .get();
 
-      const list = snapshot.docs
-        .map((doc) => {
-          const friendCoords = doc.data().location;
-          const distanceFromUser = Math.round(
-            calculateDistance(userCoords, friendCoords)
-          );
+        let list = snapshot.docs
+          .map((doc) => {
+            const friendCoords = doc.data().location;
+            const distanceFromUser = Math.round(
+              calculateDistance(userCoords, friendCoords)
+            );
 
-          let sharedPhoto;
+            let sharedPhoto;
+            let isOnline;
+            let lastSeen;
 
-          if (!doc.data().sharedPhoto) {
-            sharedPhoto = require('../assets/placeholderprofilephoto.png');
-          } else {
-            sharedPhoto = { uri: doc.data().sharedPhoto };
-          }
+            let onlineStatus = firebase
+              .database()
+              .ref('status/' + doc.id + '/state');
+            let lastChanged = firebase
+              .database()
+              .ref('status/' + doc.id + '/last_changed');
+            onlineStatus.on('value', function (snapshot) {
+              if (snapshot.val() && snapshot.val() === 'online') {
+                isOnline = true;
+              } else if (snapshot.val() && snapshot.val() === 'offline') {
+                lastChanged.on('value', (snapshot) => {
+                  lastSeen = snapshot.val();
+                  isOnline = false;
+                });
+              } else {
+                isOnline = false;
+                lastSeen = null;
+              }
+            });
 
-          return {
-            ...doc.data(),
-            sharedPhoto: sharedPhoto,
-            distanceFromUser,
-            // username: doc.data().username,
-            // location: doc.data().formattedLocation,
-            // bio: doc.data().userBio,
-            key: doc.id,
-          };
-        })
-        .filter((user) => user.key !== userId)
-        .sort((a, b) => a.distanceFromUser - b.distanceFromUser);
+            if (!doc.data().sharedPhoto) {
+              sharedPhoto = require('../assets/placeholderprofilephoto.png');
+            } else {
+              sharedPhoto = { uri: doc.data().sharedPhoto };
+            }
 
-      setUserList(list);
-      setIsFetching(false);
-    };
+            return {
+              ...doc.data(),
+              sharedPhoto: sharedPhoto,
+              distanceFromUser,
+              key: doc.id,
+              isOnline,
+              lastSeen,
+            };
+          })
+          .filter((user) => user.key !== userId);
 
-    getusers();
-  }, [userCoords, refreshing]);
+        if (sortBy === 'lastOnline') {
+          list = list.sort((a, b) => {
+            if (a.isOnline && !b.isOnline) {
+              return -1;
+            }
+            if (!a.isOnline && b.isOnline) {
+              return 1;
+            }
+            if (a.lastSeen > b.lastSeen) {
+              return -1;
+            }
+            if (a.lastSeen < b.lastSeen) {
+              return 1;
+            }
+          });
+        }
+        if (sortBy === 'distance') {
+          list = list.sort((a, b) => a.distanceFromUser - b.distanceFromUser);
+        }
+
+        setUserList(list);
+        setIsFetching(false);
+      };
+
+      getusers();
+
+      return () => {
+        console.log('CLEANUP');
+
+        firebase
+          .database()
+          .ref('status/' + userId + '/state')
+          .off();
+        firebase
+          .database()
+          .ref('status/' + userId + '/last_changed')
+          .off();
+      };
+    }, [refreshing, sortBy])
+  );
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.buttonsContainer}>
+        <TouchableOpacity
+          title="sort by last seen"
+          onPress={() => setSortBy('lastOnline')}
+        >
+          <View
+            style={{
+              // height: '100%',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRightWidth: StyleSheet.hairlineWidth,
+              paddingHorizontal: 20,
+              borderColor: '#ccc',
+            }}
+          >
+            <Ionicons
+              name="ios-eye"
+              size={23}
+              color={sortBy === 'lastOnline' ? '#E9446A' : 'black'}
+            />
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: sortBy === 'lastOnline' ? '600' : '300',
+                color: sortBy === 'lastOnline' ? '#E9446A' : 'black',
+              }}
+            >
+              {' '}
+              SORT BY LAST SEEN
+            </Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity
+          title="sort by last seen"
+          onPress={() => setSortBy('distance')}
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: 20,
+            }}
+          >
+            <Ionicons
+              name="ios-pin"
+              size={23}
+              color={sortBy === 'distance' ? '#E9446A' : 'black'}
+            />
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: sortBy === 'distance' ? '600' : '300',
+                color: sortBy === 'distance' ? '#E9446A' : 'black',
+              }}
+            >
+              {' '}
+              SORT BY DISTANCE
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+
       {userList && !isFetching && (
         <FlatList
           refreshControl={
@@ -104,7 +231,16 @@ export const screenOptions = {
 
 const styles = StyleSheet.create({
   container: {
-    margin: 20,
+    marginHorizontal: 20,
+  },
+  buttonsContainer: {
+    // flex: 1,
+    height: 40,
+    // backgroundColor: 'white',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    margin: 10,
   },
 });
 
