@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import moment from 'moment';
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, View, Text, Image } from 'react-native';
@@ -6,18 +7,25 @@ import { Avatar, Badge, Icon } from 'react-native-elements';
 import * as firebase from 'firebase';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
-const FindFriendUser = (props) => {
+const ChatPreview = (props) => {
   const {
     username,
+    sharedPhoto,
+    chatRoomId,
+    userId: friendId,
+    // isOnline,
+    // lastSeen,
     distanceFromUser,
     dateOfBirth,
-    isOnline,
-    lastSeen,
-    key,
     formattedLocation,
     gender,
   } = props.userData;
+  console.log('chatRoomId inChatPreview: ', chatRoomId);
+  console.log('whos username: ', username);
   const age = moment().diff(dateOfBirth, 'years');
+
+  const ownId = useSelector((state) => state.auth.userId);
+  const ownUsername = useSelector((state) => state.user.username);
 
   let distanceAway;
 
@@ -27,15 +35,18 @@ const FindFriendUser = (props) => {
     distanceAway = distanceFromUser;
   }
 
-  const [isOnline2, setIsOnline2] = useState(isOnline);
-  const [lastSeen2, setLastSeen2] = useState(lastSeen);
+  const [isOnline2, setIsOnline2] = useState();
+  const [lastSeen2, setLastSeen2] = useState();
+
+  const createChatRoomId = () => {
+    return [ownId, friendId].sort((a, b) => a < b).join('');
+  };
 
   useEffect(() => {
-    console.log('in the finderUserItem ');
-    let onlineStatus = firebase.database().ref('status/' + key + '/state');
+    let onlineStatus = firebase.database().ref('status/' + friendId + '/state');
     let lastChanged = firebase
       .database()
-      .ref('status/' + key + '/last_changed');
+      .ref('status/' + friendId + '/last_changed');
     onlineStatus.on('value', function (snapshot) {
       if (snapshot.val() === 'online') {
         setLastSeen2(null);
@@ -61,16 +72,24 @@ const FindFriendUser = (props) => {
     <TouchableOpacity
       style={styles.row}
       onPress={() =>
-        props.navigation.navigate('ViewProfile', {
-          userId: key,
-          username,
-          lastSeen2,
-          isOnline2,
+        props.navigation.navigate('PrivateChat', {
+          chatRoomId: createChatRoomId(),
+          ownUsername,
+          friendUsername: username,
+          ownId,
         })
       }
     >
       <View style={styles.avatarContainer}>
-        <Avatar size="medium" rounded source={props.image} />
+        <Avatar
+          size="medium"
+          rounded
+          source={
+            sharedPhoto
+              ? { uri: sharedPhoto }
+              : require('../assets/placeholderprofilephoto.png')
+          }
+        />
         {isOnline2 && (
           <Badge
             status="success"
@@ -102,19 +121,7 @@ const FindFriendUser = (props) => {
           </Text>
         )}
       </View>
-      <View style={{ flexDirection: 'row' }}>
-        <Ionicons
-          style={{ color: 'grey' }}
-          size={26}
-          name="ios-arrow-dropright"
-          onPress={() =>
-            props.navigation.navigate('ViewProfile', {
-              userId: key,
-              username: username,
-            })
-          }
-        />
-      </View>
+      <View style={{ flexDirection: 'row' }}></View>
     </TouchableOpacity>
   );
 };
@@ -162,4 +169,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FindFriendUser;
+export default ChatPreview;

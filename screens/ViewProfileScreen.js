@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import * as firebase from 'firebase';
+import 'firebase/firestore';
 import { db } from '../Fire';
 import 'firebase/firestore';
 import moment from 'moment';
@@ -14,11 +16,16 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
-import { Avatar, Badge } from 'react-native-elements';
+import { Avatar, Badge, Button } from 'react-native-elements';
 import env from '../env';
 import LoadingDataWithLogo from '../components/LoadingDataWithLogo';
 
 const ViewProfileScreen = (props) => {
+  const ownId = useSelector((state) => state.auth.userId);
+  const ownUserData = useSelector((state) => state.user);
+
+  console.log('ownId: ', ownId);
+  // const ownPhoto = useSelector((state) => state.user.sharedPhoto);
   const { userId, isOnline2, lastSeen2 } = props.route.params;
 
   const dispatch = useDispatch();
@@ -43,6 +50,43 @@ const ViewProfileScreen = (props) => {
   useEffect(() => {
     fetchUserDataHandler();
   }, []);
+
+  const openNewChatHandler = async (ownId, friendId) => {
+    const chatRoomId = [ownId, friendId].sort((a, b) => a < b).join('');
+
+    const newChatRes = await firebase
+      .firestore()
+      .collection('chats')
+      .doc(chatRoomId)
+      .set({
+        messages: [],
+        userIds: [ownId, friendId],
+        userData: {
+          userOneData: { userId: ownId, ...ownUserData },
+          userTwoData: { userId: friendId, ...userData },
+        },
+        // userData: [
+        //   { userId: ownId, ...ownUserData },
+        //   { userId: friendId, ...userData },
+        // ],
+      });
+    console.log('newChatRes', newChatRes);
+
+    props.navigation.navigate('Messages', {
+      screen: 'PrivateChat',
+      initial: false,
+      params: {
+        chatRoomId,
+        ownId,
+        friendId,
+        friendUsername: userData.username,
+        userData,
+        ownUsername: ownUserData.username,
+        ownPhoto: userData.sharedPhoto,
+      },
+    });
+    console.log(chatRoomId);
+  };
 
   if (isLoading) {
     return (
@@ -110,7 +154,10 @@ const ViewProfileScreen = (props) => {
             {lastSeen2 && `Online ${moment(new Date(lastSeen2)).fromNow()}`}
           </Text>
         </View>
-
+        <Button
+          title="Message Now"
+          onPress={() => openNewChatHandler(ownId, userId)}
+        />
         <View style={styles.settingsBody}>
           <View style={{ ...styles.settingsBodyRow }}>
             <Text style={{ ...styles.bioSectionHeader, marginTop: 12 }}>
@@ -176,6 +223,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f2f2f2',
+    marginTop: 20,
   },
   nameAgeHeader: {
     marginTop: 5,

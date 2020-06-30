@@ -49,56 +49,68 @@ const FindFriendsScreen = (props) => {
           .collection('userData')
           .get();
 
-        let list = snapshot.docs
-          .map((doc) => {
-            const friendCoords = doc.data().location;
-            const distanceFromUser = Math.round(
-              calculateDistance(userCoords, friendCoords)
-            );
+        let toAdd = [];
 
-            let sharedPhoto;
-            let isOnline;
-            let lastSeen;
+        snapshot.docs.forEach(async (doc) => {
+          const friendCoords = doc.data().location;
+          const distanceFromUser = Math.round(
+            calculateDistance(userCoords, friendCoords)
+          );
 
-            let onlineStatus = firebase
-              .database()
-              .ref('status/' + doc.id + '/state');
-            let lastChanged = firebase
-              .database()
-              .ref('status/' + doc.id + '/last_changed');
-            onlineStatus.on('value', function (snapshot) {
-              if (snapshot.val() && snapshot.val() === 'online') {
-                isOnline = true;
-              } else if (snapshot.val() && snapshot.val() === 'offline') {
-                lastChanged.on('value', (snapshot) => {
-                  lastSeen = snapshot.val();
-                  isOnline = false;
-                });
-              } else {
+          let sharedPhoto;
+          let isOnline;
+          let lastSeen;
+
+          let onlineStatus = firebase
+            .database()
+            .ref('status/' + doc.id + '/state');
+          let lastChanged = firebase
+            .database()
+            .ref('status/' + doc.id + '/last_changed');
+          onlineStatus.on('value', function (snapshot) {
+            if (snapshot.val() && snapshot.val() === 'online') {
+              isOnline = true;
+            } else if (snapshot.val() && snapshot.val() === 'offline') {
+              lastChanged.on('value', (snapshot) => {
+                lastSeen = snapshot.val();
                 isOnline = false;
-                lastSeen = null;
-              }
-            });
-
-            if (!doc.data().sharedPhoto) {
-              sharedPhoto = require('../assets/placeholderprofilephoto.png');
+              });
             } else {
-              sharedPhoto = { uri: doc.data().sharedPhoto };
+              isOnline = false;
+              lastSeen = null;
             }
+          });
 
-            return {
-              ...doc.data(),
-              sharedPhoto: sharedPhoto,
-              distanceFromUser,
-              key: doc.id,
-              isOnline,
-              lastSeen,
-            };
-          })
-          .filter((user) => user.key !== userId);
+          if (!doc.data().sharedPhoto) {
+            sharedPhoto = require('../assets/placeholderprofilephoto.png');
+          } else {
+            sharedPhoto = { uri: doc.data().sharedPhoto };
+          }
+
+          let item = {
+            ...doc.data(),
+            sharedPhoto: sharedPhoto,
+            distanceFromUser,
+            key: doc.id,
+            isOnline,
+            lastSeen,
+          };
+
+          toAdd.push(item);
+          toAdd = toAdd.filter((user) => user.key !== userId);
+          // return {
+          //   ...doc.data(),
+          //   sharedPhoto: sharedPhoto,
+          //   distanceFromUser,
+          //   key: doc.id,
+          //   isOnline,
+          //   lastSeen,
+          // };
+          // })
+        });
 
         if (sortBy === 'lastOnline') {
-          list = list.sort((a, b) => {
+          toAdd = toAdd.sort((a, b) => {
             if (a.isOnline && !b.isOnline) {
               return -1;
             }
@@ -114,26 +126,17 @@ const FindFriendsScreen = (props) => {
           });
         }
         if (sortBy === 'distance') {
-          list = list.sort((a, b) => a.distanceFromUser - b.distanceFromUser);
+          toAdd = toAdd.sort((a, b) => a.distanceFromUser - b.distanceFromUser);
         }
 
-        setUserList(list);
+        setUserList(toAdd);
         setIsFetching(false);
       };
 
       getusers();
 
       return () => {
-        console.log('CLEANUP');
-
-        firebase
-          .database()
-          .ref('status/' + userId + '/state')
-          .off();
-        firebase
-          .database()
-          .ref('status/' + userId + '/last_changed')
-          .off();
+        console.log('here?');
       };
     }, [refreshing, sortBy])
   );
@@ -168,7 +171,7 @@ const FindFriendsScreen = (props) => {
                 color: sortBy === 'lastOnline' ? '#E9446A' : 'black',
               }}
             >
-              {' '}
+              {'  '}
               SORT BY LAST SEEN
             </Text>
           </View>
@@ -196,7 +199,7 @@ const FindFriendsScreen = (props) => {
                 color: sortBy === 'distance' ? '#E9446A' : 'black',
               }}
             >
-              {' '}
+              {'  '}
               SORT BY DISTANCE
             </Text>
           </View>

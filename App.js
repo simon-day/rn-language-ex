@@ -41,6 +41,10 @@ firebase.auth().onAuthStateChanged(async (user) => {
           });
       });
   }
+
+  if (user) {
+
+  }
 });
 
 import { decode, encode } from 'base-64';

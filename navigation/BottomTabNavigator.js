@@ -7,8 +7,9 @@ import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from '../screens/HomeScreen';
 import ProfileNavigator from './ProfileNavigator';
 import FindFriendsNavigator from './FindFriendsNavigator';
+import MessageNavigator from './MessageNavigator';
 import ProfileScreen from '../screens/ProfileScreen';
-import MessageScreen from '../screens/MessageScreen';
+import MessagesScreen from '../screens/MessagesScreen';
 import FindFriendsScreen from '../screens/FindFriendsScreen';
 import NotificationScreen from '../screens/NotificationScreen';
 
@@ -68,7 +69,7 @@ const BottomTabNavigator = () => {
     >
       <Tab.Screen name="Profile" component={ProfileNavigator} />
       <Tab.Screen name="FindFriends" component={FindFriendsNavigator} />
-      <Tab.Screen name="Messages" component={MessageScreen} />
+      <Tab.Screen name="Messages" component={MessageNavigator} />
     </Tab.Navigator>
   );
 };
