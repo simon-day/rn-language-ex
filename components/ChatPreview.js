@@ -2,10 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import moment from 'moment';
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, View, Text, Image } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+} from 'react-native';
 import { Avatar, Badge, Icon } from 'react-native-elements';
 import * as firebase from 'firebase';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 
 const ChatPreview = (props) => {
   const {
@@ -15,11 +21,13 @@ const ChatPreview = (props) => {
     userId: friendId,
     // isOnline,
     // lastSeen,
-    distanceFromUser,
+    // distanceFromUser,
     dateOfBirth,
     formattedLocation,
     gender,
   } = props.userData;
+  const { distanceFromUser } = props;
+  console.log('PROPS>USERDATA: ', props.userData);
   console.log('chatRoomId inChatPreview: ', chatRoomId);
   console.log('whos username: ', username);
   const age = moment().diff(dateOfBirth, 'years');
@@ -69,60 +77,62 @@ const ChatPreview = (props) => {
   }, []);
 
   return (
-    <TouchableOpacity
+    <TouchableWithoutFeedback
       style={styles.row}
-      onPress={() =>
+      onPress={() => {
         props.navigation.navigate('PrivateChat', {
           chatRoomId: createChatRoomId(),
           ownUsername,
           friendUsername: username,
           ownId,
-        })
-      }
+        });
+      }}
     >
-      <View style={styles.avatarContainer}>
-        <Avatar
-          size="medium"
-          rounded
-          source={
-            sharedPhoto
-              ? { uri: sharedPhoto }
-              : require('../assets/placeholderprofilephoto.png')
-          }
-        />
-        {isOnline2 && (
-          <Badge
-            status="success"
-            badgeStyle={{ width: 12, height: 12, borderRadius: 20 }}
-            containerStyle={{ position: 'absolute', bottom: 2, right: 2 }}
+      <View style={styles.row}>
+        <View>
+          <Avatar
+            size="medium"
+            rounded
+            source={
+              sharedPhoto
+                ? { uri: sharedPhoto }
+                : require('../assets/placeholderprofilephoto.png')
+            }
           />
-        )}
-      </View>
-      <View style={styles.userInfoContainer}>
-        <View style={styles.nameAgeHeader}>
-          <Text style={styles.usernameText}>{username}</Text>
-          <View
-            style={{
-              marginLeft: 5,
-              padding: 2,
-              backgroundColor: gender === 'Male' ? '#2CA4D3' : '#B23174',
-            }}
-          >
-            <Text style={styles.ageText}>{age}</Text>
-          </View>
+          {isOnline2 && (
+            <Badge
+              status="success"
+              badgeStyle={{ width: 12, height: 12, borderRadius: 20 }}
+              containerStyle={{ position: 'absolute', bottom: 2, right: 2 }}
+            />
+          )}
         </View>
-        <Text style={styles.locationText}>{formattedLocation}</Text>
-        <Text style={styles.distanceText}>{distanceAway}km away</Text>
-        {lastSeen2 && (
-          <Text
-            style={{ textTransform: 'uppercase', fontSize: 9, marginTop: 6 }}
-          >
-            Last seen {moment(new Date(lastSeen2)).fromNow()}
-          </Text>
-        )}
+        <View style={styles.userInfoContainer}>
+          <View style={styles.nameAgeHeader}>
+            <Text style={styles.usernameText}>{username}</Text>
+            <View
+              style={{
+                marginLeft: 5,
+                padding: 2,
+                backgroundColor: gender === 'Male' ? '#2CA4D3' : '#B23174',
+              }}
+            >
+              <Text style={styles.ageText}>{age}</Text>
+            </View>
+          </View>
+          <Text style={styles.locationText}>{formattedLocation}</Text>
+          <Text style={styles.distanceText}>{distanceAway}km away</Text>
+          {lastSeen2 && (
+            <Text
+              style={{ textTransform: 'uppercase', fontSize: 9, marginTop: 6 }}
+            >
+              Last seen {moment(new Date(lastSeen2)).fromNow()}
+            </Text>
+          )}
+        </View>
       </View>
-      <View style={{ flexDirection: 'row' }}></View>
-    </TouchableOpacity>
+      {/* <View style={{ flexDirection: 'row' }}></View> */}
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -132,9 +142,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     paddingBottom: 6,
-    marginVertical: 3,
+    // marginVertical: 3,
     borderBottomWidth: StyleSheet.hairlineWidth,
+    borderTopWidth: StyleSheet.hairlineWidth,
     borderColor: '#ccc',
+    backgroundColor: '#F2F2F2',
   },
   avatarContainer: {},
   avatarImage: {

@@ -188,7 +188,7 @@ export const addProfilePhoto = (userId, photoUri) => {
       const blob = await response.blob();
       let ref = firebase.storage().ref().child(`${userId}/images/avatar.jpg`);
 
-      await ref.put(blob);
+      await ref.put(blob, { cacheControl: 'max-age=31536000' });
 
       dispatch({ type: ADD_PROFILE_PHOTO, photo: photoUri });
       const URL = await ref.getDownloadURL();

@@ -59,16 +59,11 @@ const ViewProfileScreen = (props) => {
       .collection('chats')
       .doc(chatRoomId)
       .set({
-        messages: [],
         userIds: [ownId, friendId],
         userData: {
           userOneData: { userId: ownId, ...ownUserData },
           userTwoData: { userId: friendId, ...userData },
         },
-        // userData: [
-        //   { userId: ownId, ...ownUserData },
-        //   { userId: friendId, ...userData },
-        // ],
       });
     console.log('newChatRes', newChatRes);
 

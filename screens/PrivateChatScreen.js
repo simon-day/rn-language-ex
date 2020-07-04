@@ -15,14 +15,14 @@ import { IconButton } from 'react-native-paper';
 
 // import useStatsBar from '../utils/useStatusBar';
 
-export default function PrivateChatScreen({ route }) {
+export default function PrivateChatScreen(props) {
   const user = useSelector((state) => state.auth.userId);
   const userData = useSelector((state) => state.user);
 
   const { sharedPhoto } = userData;
 
   const [messages, setMessages] = useState([]);
-  const { chatRoomId, ownUsername } = route.params;
+  const { chatRoomId, ownUsername } = props.route.params;
   //   const currentUser = user.toJSON();
 
   async function handleSend(messages) {
@@ -99,13 +99,8 @@ export default function PrivateChatScreen({ route }) {
       <Bubble
         {...props}
         wrapperStyle={{
-          right: {
-            backgroundColor: '#6646ee',
-          },
-        }}
-        textStyle={{
-          right: {
-            color: '#fff',
+          left: {
+            backgroundColor: '#e3e3e3',
           },
         }}
       />
@@ -133,7 +128,7 @@ export default function PrivateChatScreen({ route }) {
   function scrollToBottomComponent() {
     return (
       <View>
-        <IconButton icon="chevron-double-down" size={36} color="#6646ee" />
+        <IconButton icon="chevron-double-down" size={36} />
       </View>
     );
   }
@@ -151,8 +146,18 @@ export default function PrivateChatScreen({ route }) {
       alwaysShowSend
       showUserAvatar
       scrollToBottom
-      // renderBubble={renderBubble}
-      // renderLoading={renderLoading}
+      renderBubble={renderBubble}
+      renderLoading={renderLoading}
+      onPressAvatar={() =>
+        props.navigation.navigate('FindFriends', {
+          screen: 'ViewProfile',
+          initial: false,
+          params: {
+            userId: chatRoomId.replace(user, ''),
+            username: 'TEST',
+          },
+        })
+      }
       // renderSend={renderSend}
       scrollToBottomComponent={scrollToBottomComponent}
       renderSystemMessage={renderSystemMessage}

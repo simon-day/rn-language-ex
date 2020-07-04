@@ -8,21 +8,43 @@ import {
   StyleSheet,
   SafeAreaView,
   Text,
+  Animated,
   FlatList,
   Button,
   View,
   Image,
   RefreshControl,
+  TouchableHighlight,
+  ScrollView,
   TouchableOpacity,
 } from 'react-native';
 import ChatPreview from '../components/ChatPreview';
 import calculateDistance from '../utilities/calculateDistance';
+// import Swipeable from 'react-native-swipeable-row';
+import Swipeable from 'react-native-gesture-handler/Swipeable';
+import { RectButton } from 'react-native-gesture-handler';
+
+// I18nManager.allowRTL(true);
 
 const MessagesScreen = (props) => {
   const [chatPreviewList, setChatPreviewList] = useState([]);
+  const [isSwiping, setIsSwiping] = useState(false);
   const [chatData, setChatData] = useState([]);
   const userCoords = useSelector((state) => state.user.location);
   const userId = useSelector((state) => state.auth.userId);
+
+  const renderRightActions = (progress, dragX) => {
+    const scale = dragX.interpolate({
+      inputRange: [-100, 0],
+      outputRange: [0, 1],
+      extrapolate: 'clamp',
+    });
+    return (
+      <View style={styles.rightAction}>
+        <Animated.Text style={[styles.actionText]}>Archive</Animated.Text>
+      </View>
+    );
+  };
 
   useEffect(() => {
     const getChats = async () => {
@@ -32,36 +54,58 @@ const MessagesScreen = (props) => {
           .collection('chats')
           .where('userIds', 'array-contains', user.uid)
           .onSnapshot(async (res) => {
-            const chats = res.docs.map((doc) => {
-              //   chatPreviewData = doc
-              //     .data()
-              //     .userData.find((user) => user.userId !== userId);
-              return {
-                chatRoomId: doc.id,
-                userIds: doc.data().userIds,
-                userData: doc.data().userData,
-              };
-            });
+            const chats = res.docs
+              .map((doc) => {
+                let latestMessage;
 
-            // await setChatData(chatPreviewData);
-            await setChatPreviewList(chats);
+                if (doc.get('latestMessage') !== undefined) {
+                  console.log('LATEST MESSAGE EXISTS!');
+                  latestMessage = doc.data().latestMessage.text;
+                } else {
+                  latestMessage = '';
+                }
 
-            await setChatData(
-              chats.map((chat) => {
                 const distanceFromUser = Math.round(
                   calculateDistance(
-                    chat.userData.userOneData.location,
-                    chat.userData.userTwoData.location
+                    doc.data().userData.userOneData.location,
+                    doc.data().userData.userTwoData.location
                   )
                 );
-                if (chat.userData.userOneData.userId !== userId) {
-                  return { ...chat.userData.userOneData, distanceFromUser };
+
+                let friendId;
+                let username;
+                let sharedPhoto;
+                let userData;
+
+                if (doc.data().userData.userOneData.userId === userId) {
+                  userData = { ...doc.data().userData.userTwoData };
+                  console.log('userData here', userData);
+                  friendId = doc.data().userData.userTwoData.userId;
+                  username = doc.data().userData.userTwoData.username;
+                  sharedPhoto = doc.data().userData.userTwoData.sharedPhoto;
                 } else {
-                  return { ...chat.userData.userTwoData, distanceFromUser };
+                  userData = { ...doc.data().userData.userOneData };
+                  friendId = doc.data().userData.userOneData.userId;
+                  username = doc.data().userData.userOneData.username;
+                  sharedPhoto = doc.data().userData.userOneData.sharedPhoto;
                 }
+
+                return {
+                  chatRoomId: doc.id,
+                  friendId,
+                  username,
+                  sharedPhoto,
+                  // userIds: doc.data().userIds,
+                  userData,
+                  distanceFromUser,
+                  latestMessage,
+                };
               })
-            );
-            console.log(chatData);
+              .filter((chat) => chat.latestMessage !== '');
+
+            await setChatData(chats);
+
+            console.log('chatData: ', chatData);
           });
       });
     };
@@ -70,23 +114,25 @@ const MessagesScreen = (props) => {
   }, []);
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={styles.container}>
       {chatData && (
         <FlatList
-          keyExtractor={(item) => item.userId}
+          keyExtractor={(item) => item.friendId}
           // refreshControl={
           //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           // }
           showsVerticalScrollIndicator={false}
           data={chatData}
           renderItem={({ item }) => (
-            <ChatPreview
-              navigation={props.navigation}
-              userData={item}
-              username={item.username}
-              distanceFromUser={item.distanceFromUser}
-              image={item.sharedPhoto}
-            />
+            <Swipeable renderRightActions={renderRightActions}>
+              <ChatPreview
+                navigation={props.navigation}
+                userData={item.userData}
+                username={item.username}
+                distanceFromUser={item.distanceFromUser}
+                image={item.sharedPhoto}
+              />
+            </Swipeable>
           )}
         />
       )}
@@ -137,7 +183,31 @@ const MessagesScreen = (props) => {
 const styles = StyleSheet.create({
   container: {
     marginHorizontal: 20,
+    // margin: 30,
     height: '100%',
+  },
+  actionText: {
+    backgroundColor: 'red',
+    color: 'black',
+    fontWeight: '600',
+    padding: 20,
+    textAlign: 'right',
+  },
+  // rectButton: {
+  //   flex: 1,
+  //   height: 80,
+  //   paddingVertical: 10,
+  //   paddingHorizontal: 20,
+  //   justifyContent: 'space-between',
+  //   flexDirection: 'column',
+  //   backgroundColor: 'white',
+  // },
+  rightAction: {
+    justifyContent: 'center',
+    flex: 1,
+    // alignItems: 'center',
+    // backgroundColor: 'white',
+    // backgroundColor: 'red',
   },
   buttonsContainer: {
     // flex: 1,
