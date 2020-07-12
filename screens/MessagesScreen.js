@@ -22,6 +22,7 @@ import ChatPreview from '../components/ChatPreview';
 import calculateDistance from '../utilities/calculateDistance';
 // import Swipeable from 'react-native-swipeable-row';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
+import { Ionicons } from '@expo/vector-icons';
 import { RectButton } from 'react-native-gesture-handler';
 
 // I18nManager.allowRTL(true);
@@ -29,9 +30,15 @@ import { RectButton } from 'react-native-gesture-handler';
 const MessagesScreen = (props) => {
   const [chatPreviewList, setChatPreviewList] = useState([]);
   const [isSwiping, setIsSwiping] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
   const [chatData, setChatData] = useState([]);
   const userCoords = useSelector((state) => state.user.location);
   const userId = useSelector((state) => state.auth.userId);
+
+  const hideMessage = async () => {
+    console.log('Message hidden');
+    setIsHidden(true);
+  };
 
   const renderRightActions = (progress, dragX) => {
     const scale = dragX.interpolate({
@@ -40,9 +47,10 @@ const MessagesScreen = (props) => {
       extrapolate: 'clamp',
     });
     return (
-      <View style={styles.rightAction}>
-        <Animated.Text style={[styles.actionText]}>Archive</Animated.Text>
-      </View>
+      <TouchableOpacity style={styles.rightAction} onPress={hideMessage}>
+        {/* <Animated.Text style={[styles.actionText]}>Archive</Animated.Text> */}
+        <Ionicons style={[styles.actionText]} size={30} name="ios-trash" />
+      </TouchableOpacity>
     );
   };
 
@@ -124,10 +132,15 @@ const MessagesScreen = (props) => {
           showsVerticalScrollIndicator={false}
           data={chatData}
           renderItem={({ item }) => (
-            <Swipeable renderRightActions={renderRightActions}>
+            <Swipeable
+              onPress={() => console.log('noooo')}
+              renderRightActions={renderRightActions}
+            >
               <ChatPreview
+                hide={isHidden}
                 navigation={props.navigation}
                 userData={item.userData}
+                chatRoomId={item.chatRoomId}
                 username={item.username}
                 distanceFromUser={item.distanceFromUser}
                 image={item.sharedPhoto}
@@ -187,11 +200,13 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   actionText: {
-    backgroundColor: 'red',
-    color: 'black',
+    // backgroundColor: 'red',
+    color: 'white',
     fontWeight: '600',
-    padding: 20,
-    textAlign: 'right',
+    paddingHorizontal: 30,
+    // paddingVertical: 23,
+    // paddingHorizontal: 23,
+    textAlign: 'center',
   },
   // rectButton: {
   //   flex: 1,
@@ -204,8 +219,10 @@ const styles = StyleSheet.create({
   // },
   rightAction: {
     justifyContent: 'center',
-    flex: 1,
-    // alignItems: 'center',
+    backgroundColor: 'red',
+    // paddingHorizontal: 32,
+    // flex: 1,
+    alignItems: 'flex-end',
     // backgroundColor: 'white',
     // backgroundColor: 'red',
   },

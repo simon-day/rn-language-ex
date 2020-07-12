@@ -12,12 +12,13 @@ import {
 } from 'react-native';
 import { Avatar, Badge, Icon } from 'react-native-elements';
 import * as firebase from 'firebase';
+import 'firebase/firestore';
 
 const ChatPreview = (props) => {
   const {
     username,
     sharedPhoto,
-    chatRoomId,
+    // chatRoomId,
     userId: friendId,
     // isOnline,
     // lastSeen,
@@ -26,11 +27,12 @@ const ChatPreview = (props) => {
     formattedLocation,
     gender,
   } = props.userData;
-  const { distanceFromUser } = props;
+  const { distanceFromUser, hide, chatRoomId } = props;
   console.log('PROPS>USERDATA: ', props.userData);
   console.log('chatRoomId inChatPreview: ', chatRoomId);
   console.log('whos username: ', username);
   const age = moment().diff(dateOfBirth, 'years');
+  console.log('isHidden? ', hide);
 
   const ownId = useSelector((state) => state.auth.userId);
   const ownUsername = useSelector((state) => state.user.username);
@@ -42,6 +44,22 @@ const ChatPreview = (props) => {
   } else {
     distanceAway = distanceFromUser;
   }
+
+  const hideChat = async () => {
+    console.log('CHATROOMID: ', chatRoomId);
+    await firebase
+      .firestore()
+      .collection('chats')
+      .doc(chatRoomId)
+      .update({ hideFrom: firebase.firestore.FieldValue.arrayUnion(ownId) });
+    console.log('DOITTTTT');
+  };
+
+  useEffect(() => {
+    if (hide) {
+      hideChat();
+    }
+  }, [hide]);
 
   const [isOnline2, setIsOnline2] = useState();
   const [lastSeen2, setLastSeen2] = useState();
