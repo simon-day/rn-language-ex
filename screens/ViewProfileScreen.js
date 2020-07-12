@@ -64,7 +64,7 @@ const ViewProfileScreen = (props) => {
           userOneData: { userId: ownId, ...ownUserData },
           userTwoData: { userId: friendId, ...userData },
         },
-        hideFrom: [],
+        showTo: [ownId],
       });
     console.log('newChatRes', newChatRes);
 

@@ -53,6 +53,7 @@ export default function PrivateChatScreen(props) {
             text,
             createdAt: new Date().getTime(),
           },
+          showTo: [user, chatRoomId.replace(user, '')],
         },
         { merge: true }
       );
@@ -166,7 +167,6 @@ export default function PrivateChatScreen(props) {
 }
 
 export const screenOptions = (navData) => {
-  console.log('PARAMS: ', navData.route.params);
   // let chattingWithName = !!navData.route.params.username
   //   ? navData.route.params.username
   //   : navData.route.params.friendUsername;

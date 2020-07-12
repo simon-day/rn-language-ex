@@ -35,23 +35,34 @@ const MessagesScreen = (props) => {
   const userCoords = useSelector((state) => state.user.location);
   const userId = useSelector((state) => state.auth.userId);
 
-  const hideMessage = async () => {
-    console.log('Message hidden');
-    setIsHidden(true);
-  };
+  // const hideMessage = async (chatRoomId) => {
+  //   console.log('Message hidden with chatroomID: ', chatRoomId);
+  //   setIsHidden(true);
+  // };
 
-  const renderRightActions = (progress, dragX) => {
+  const renderRightActions = (chatRoomId, ownId, progress, dragX) => {
     const scale = dragX.interpolate({
       inputRange: [-100, 0],
       outputRange: [0, 1],
       extrapolate: 'clamp',
     });
     return (
-      <TouchableOpacity style={styles.rightAction} onPress={hideMessage}>
+      <TouchableOpacity
+        style={styles.rightAction}
+        onPress={() => hideChat(chatRoomId, ownId)}
+      >
         {/* <Animated.Text style={[styles.actionText]}>Archive</Animated.Text> */}
         <Ionicons style={[styles.actionText]} size={30} name="ios-trash" />
       </TouchableOpacity>
     );
+  };
+
+  const hideChat = async (chatRoomId, ownId) => {
+    await firebase
+      .firestore()
+      .collection('chats')
+      .doc(chatRoomId)
+      .update({ showTo: firebase.firestore.FieldValue.arrayRemove(ownId) });
   };
 
   useEffect(() => {
@@ -60,7 +71,8 @@ const MessagesScreen = (props) => {
         await firebase
           .firestore()
           .collection('chats')
-          .where('userIds', 'array-contains', user.uid)
+          // .where('userIds', 'array-contains', user.uid)
+          .where('showTo', 'array-contains', user.uid)
           .onSnapshot(async (res) => {
             const chats = res.docs
               .map((doc) => {
@@ -107,13 +119,12 @@ const MessagesScreen = (props) => {
                   userData,
                   distanceFromUser,
                   latestMessage,
+                  hideFn: () => hideChat(doc.id),
                 };
               })
               .filter((chat) => chat.latestMessage !== '');
 
-            await setChatData(chats);
-
-            console.log('chatData: ', chatData);
+            setChatData(chats);
           });
       });
     };
@@ -133,11 +144,14 @@ const MessagesScreen = (props) => {
           data={chatData}
           renderItem={({ item }) => (
             <Swipeable
-              onPress={() => console.log('noooo')}
-              renderRightActions={renderRightActions}
+              renderRightActions={renderRightActions.bind(
+                this,
+                item.chatRoomId,
+                userId
+              )}
             >
               <ChatPreview
-                hide={isHidden}
+                hideFn={item.hideFn}
                 navigation={props.navigation}
                 userData={item.userData}
                 chatRoomId={item.chatRoomId}
