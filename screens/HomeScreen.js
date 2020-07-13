@@ -14,9 +14,6 @@ const HomeScreen = (props) => {
   const userName = useSelector((state) => state.auth.username);
   const auth = useSelector((state) => state.auth);
 
-
-
-
   const dispatch = useDispatch();
 
   const signOutHandler = () => {
@@ -25,9 +22,9 @@ const HomeScreen = (props) => {
 
   LayoutAnimation.easeInEaseOut();
 
-  useEffect(() => {
-    console.log(userName);
-  }, [auth]);
+  // useEffect(() => {
+  //   console.log(userName);
+  // }, [auth]);
 
   return (
     <View style={styles.container}>

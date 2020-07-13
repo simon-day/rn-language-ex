@@ -53,8 +53,6 @@ export const setUserName = (userId, username) => {
 };
 
 export const setLocation = (userId, coords) => {
-  console.log('HERE');
-
   return async (dispatch) => {
     let lat;
     let lng;
@@ -194,7 +192,6 @@ export const addProfilePhoto = (userId, photoUri) => {
       const URL = await ref.getDownloadURL();
       dispatch(setSharedPhoto(userId, URL));
     } catch (error) {
-      console.log('ISTHISTHEERROR?');
       console.log(error);
     }
   };

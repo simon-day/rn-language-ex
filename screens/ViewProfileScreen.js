@@ -24,8 +24,6 @@ const ViewProfileScreen = (props) => {
   const ownId = useSelector((state) => state.auth.userId);
   const ownUserData = useSelector((state) => state.user);
 
-  console.log('ownId: ', ownId);
-  // const ownPhoto = useSelector((state) => state.user.sharedPhoto);
   const { userId, isOnline2, lastSeen2 } = props.route.params;
 
   const dispatch = useDispatch();
@@ -66,22 +64,21 @@ const ViewProfileScreen = (props) => {
         },
         showTo: [ownId],
       });
-    console.log('newChatRes', newChatRes);
 
-    props.navigation.navigate('Messages', {
-      screen: 'PrivateChat',
-      initial: false,
-      params: {
-        chatRoomId,
-        ownId,
-        friendId,
-        friendUsername: userData.username,
-        userData,
-        ownUsername: ownUserData.username,
-        ownPhoto: userData.sharedPhoto,
-      },
+    props.navigation.navigate('PrivateChat', {
+      // screen: 'PrivateChat',
+      // initial: false,
+      // params: {
+      chatRoomId,
+      ownId,
+      friendId,
+      friendUsername: userData.username,
+      userData,
+      ownUsername: ownUserData.username,
+      ownPhoto: userData.sharedPhoto,
+      // },
     });
-    console.log(chatRoomId);
+    // );
   };
 
   if (isLoading) {

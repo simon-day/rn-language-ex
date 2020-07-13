@@ -23,13 +23,21 @@ const ChatPreview = (props) => {
     formattedLocation,
     gender,
   } = props.userData;
-  const { distanceFromUser, chatRoomId } = props;
+  const { distanceFromUser, latestMessage } = props;
   const age = moment().diff(dateOfBirth, 'years');
 
   const ownId = useSelector((state) => state.auth.userId);
   const ownUsername = useSelector((state) => state.user.username);
 
   let distanceAway;
+
+  let latestMessageUser;
+
+  if (latestMessage.user === ownUsername) {
+    latestMessageUser = 'You: ';
+  } else {
+    latestMessageUser = '';
+  }
 
   if (distanceFromUser < 2) {
     distanceAway = 'less than 2';
@@ -114,8 +122,23 @@ const ChatPreview = (props) => {
               <Text style={styles.ageText}>{age}</Text>
             </View>
           </View>
-          <Text style={styles.locationText}>{formattedLocation}</Text>
-          <Text style={styles.distanceText}>{distanceAway}km away</Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Text style={styles.latestMessage} numberOfLines={1}>
+              {latestMessageUser}
+              {latestMessage.text}
+            </Text>
+            <Text style={styles.latestMessageTime}>
+              {moment(latestMessage.createdAt).format('hh:mm a')}
+            </Text>
+          </View>
+
+          {/* <Text style={styles.distanceText}>{distanceAway}km away</Text> */}
           {lastSeen2 && (
             <Text
               style={{ textTransform: 'uppercase', fontSize: 9, marginTop: 6 }}
@@ -135,7 +158,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
-    paddingBottom: 6,
+    paddingVertical: 3,
     // marginVertical: 3,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderTopWidth: StyleSheet.hairlineWidth,
@@ -154,7 +177,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   usernameText: {
-    fontSize: 15,
+    fontSize: 18,
     fontWeight: '500',
   },
   nameAgeHeader: {
@@ -172,6 +195,21 @@ const styles = StyleSheet.create({
     marginTop: 3,
     fontWeight: '300',
     fontSize: 11,
+  },
+  latestMessage: {
+    // marginRight: 15,
+    paddingTop: 5,
+    width: '75%',
+    paddingBottom: 3,
+    fontSize: 14,
+    color: '#696969',
+  },
+  latestMessageTime: {
+    // marginRight: 45,
+    paddingTop: 5,
+    paddingBottom: 3,
+    fontSize: 14,
+    color: '#696969',
   },
 });
 

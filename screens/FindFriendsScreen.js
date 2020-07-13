@@ -135,9 +135,7 @@ const FindFriendsScreen = (props) => {
 
       getusers();
 
-      return () => {
-        console.log('here?');
-      };
+      return () => {};
     }, [refreshing, sortBy])
   );
 
@@ -235,6 +233,7 @@ export const screenOptions = {
 const styles = StyleSheet.create({
   container: {
     marginHorizontal: 20,
+    marginBottom: 50,
   },
   buttonsContainer: {
     // flex: 1,

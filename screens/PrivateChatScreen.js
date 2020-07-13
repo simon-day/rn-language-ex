@@ -41,6 +41,7 @@ export default function PrivateChatScreen(props) {
           username: ownUsername,
           avatar: sharedPhoto,
         },
+        sent: true,
       });
 
     await firebase
@@ -52,6 +53,7 @@ export default function PrivateChatScreen(props) {
           latestMessage: {
             text,
             createdAt: new Date().getTime(),
+            user: ownUsername,
           },
           showTo: [user, chatRoomId.replace(user, '')],
         },
@@ -167,37 +169,7 @@ export default function PrivateChatScreen(props) {
 }
 
 export const screenOptions = (navData) => {
-  // let chattingWithName = !!navData.route.params.username
-  //   ? navData.route.params.username
-  //   : navData.route.params.friendUsername;
-
   return {
     headerTitle: `Chatting with ${navData.route.params.friendUsername}`,
   };
 };
-
-// const styles = StyleSheet.create({
-//   loadingContainer: {
-//     flex: 1,
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//   },
-//   sendingContainer: {
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-//   bottomComponentContainer: {
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-//   systemMessageWrapper: {
-//     backgroundColor: '#6646ee',
-//     borderRadius: 4,
-//     padding: 5,
-//   },
-//   systemMessageText: {
-//     fontSize: 14,
-//     color: '#fff',
-//     fontWeight: 'bold',
-//   },
-// });

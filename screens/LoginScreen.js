@@ -101,24 +101,19 @@ const LoginScreen = (props) => {
           .auth()
           .signInWithCredential(credential)
           .then((res) => {
-            console.log('RESSSSSSSSS: ', res);
             const photoUrl = res.user.photoURL;
             const largerPhoto = photoUrl.replace('s96-c', 's400-c');
-            console.log(res.additionalUserInfo.profile.given_name);
             const givenName = res.additionalUserInfo.profile.given_name;
 
             const userId = res.user.uid;
 
             if (res.additionalUserInfo.isNewUser) {
-              console.log('WEEEEEEEEE');
               dispatch(userActions.setUserName(userId, givenName));
               dispatch(userActions.addProfilePhoto(userId, largerPhoto));
               dispatch(userActions.setSharedPhoto(userId, largerPhoto));
 
               // props.navigation.navigate('AskForAge');
             }
-
-            console.log('user signed in');
           })
           .catch((error) => {
             // Handle Errors here.

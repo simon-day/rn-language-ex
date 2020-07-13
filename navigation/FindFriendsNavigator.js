@@ -6,7 +6,9 @@ import FindFriendsScreen, {
 import ViewProfileScreen, {
   screenOptions as viewProfileScreenOptions,
 } from '../screens/ViewProfileScreen';
-import PrivateChatScreen from '../screens/PrivateChatScreen';
+import PrivateChatScreen, {
+  screenOptions as privateChatScreenOptions,
+} from '../screens/PrivateChatScreen';
 
 const FindFriendsStackNavigator = createStackNavigator();
 
@@ -27,6 +29,7 @@ const FindFriendsNavigator = () => {
       <FindFriendsStackNavigator.Screen
         name="PrivateChat"
         component={PrivateChatScreen}
+        options={privateChatScreenOptions}
         // options={viewProfileScreenOptions}
         // options={languageselectionScreenOptions}
       />

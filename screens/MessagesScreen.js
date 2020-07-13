@@ -79,8 +79,7 @@ const MessagesScreen = (props) => {
                 let latestMessage;
 
                 if (doc.get('latestMessage') !== undefined) {
-                  console.log('LATEST MESSAGE EXISTS!');
-                  latestMessage = doc.data().latestMessage.text;
+                  latestMessage = doc.data().latestMessage;
                 } else {
                   latestMessage = '';
                 }
@@ -99,7 +98,6 @@ const MessagesScreen = (props) => {
 
                 if (doc.data().userData.userOneData.userId === userId) {
                   userData = { ...doc.data().userData.userTwoData };
-                  console.log('userData here', userData);
                   friendId = doc.data().userData.userTwoData.userId;
                   username = doc.data().userData.userTwoData.username;
                   sharedPhoto = doc.data().userData.userTwoData.sharedPhoto;
@@ -122,7 +120,10 @@ const MessagesScreen = (props) => {
                   hideFn: () => hideChat(doc.id),
                 };
               })
-              .filter((chat) => chat.latestMessage !== '');
+              .filter((chat) => chat.latestMessage.text !== '')
+              .sort(
+                (a, b) => b.latestMessage.createdAt - a.latestMessage.createdAt
+              );
 
             setChatData(chats);
           });
@@ -154,6 +155,7 @@ const MessagesScreen = (props) => {
                 hideFn={item.hideFn}
                 navigation={props.navigation}
                 userData={item.userData}
+                latestMessage={item.latestMessage}
                 chatRoomId={item.chatRoomId}
                 username={item.username}
                 distanceFromUser={item.distanceFromUser}
