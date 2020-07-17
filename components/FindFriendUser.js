@@ -31,7 +31,6 @@ const FindFriendUser = (props) => {
   const [lastSeen2, setLastSeen2] = useState(lastSeen);
 
   useEffect(() => {
-    console.log('in the finderUserItem ');
     let onlineStatus = firebase.database().ref('status/' + key + '/state');
     let lastChanged = firebase
       .database()

@@ -5,13 +5,15 @@ import {
   Send,
   SystemMessage,
 } from 'react-native-gifted-chat';
-import { ActivityIndicator, View, StyleSheet } from 'react-native';
+import { ActivityIndicator, View, Text, StyleSheet } from 'react-native';
 // import { IconButton } from 'react-native-paper';
 // import { AuthContext } from '../navigation/AuthProvider';
 import 'firebase/firestore';
 import * as firebase from 'firebase';
 import { useSelector } from 'react-redux';
 import { IconButton } from 'react-native-paper';
+import { TypingAnimation } from 'react-native-typing-animation';
+import ChatAccessoryBar from '../components/ChatAccessoryBar';
 
 // import useStatsBar from '../utils/useStatusBar';
 
@@ -23,7 +25,18 @@ export default function PrivateChatScreen(props) {
 
   const [messages, setMessages] = useState([]);
   const { chatRoomId, ownUsername } = props.route.params;
-  //   const currentUser = user.toJSON();
+  const [isTyping, setIsTyping] = useState(true);
+
+  useEffect(() => {
+    setIsTyping(true);
+  }, []);
+
+  const renderAccessory = () => (
+    <ChatAccessoryBar
+      onSend={() => console.log('TODO')}
+      isTyping={() => setIsTyping(!isTyping)}
+    />
+  );
 
   async function handleSend(messages) {
     const text = messages[0].text;
@@ -118,6 +131,13 @@ export default function PrivateChatScreen(props) {
     );
   }
 
+  function renderFooter() {
+    if (isTyping) {
+      return <TypingAnimation />;
+    }
+    return null;
+  }
+
   function renderSend(props) {
     return (
       <Send {...props}>
@@ -140,15 +160,27 @@ export default function PrivateChatScreen(props) {
     return <SystemMessage {...props} />;
   }
 
+  // function renderAccessory() {
+  //   return (
+  //     <AccessoryBar
+  //       onSend={handleSend}
+  //       isTyping={() => setIsTyping(!isTyping)}
+  //     />
+  //   );
+  // }
+
   return (
     <GiftedChat
       messages={messages}
+      isTyping={isTyping}
       onSend={handleSend}
       user={{ _id: user }}
       placeholder="Type your message here..."
       alwaysShowSend
       showUserAvatar
       scrollToBottom
+      renderAccessory={renderAccessory}
+      // renderFooter={renderFooter}
       renderBubble={renderBubble}
       renderLoading={renderLoading}
       onPressAvatar={() =>
